@@ -1,2 +1,8 @@
+# local vscode configuration
 .vscode
+
+# temporary python files
 __pycache__
+
+# exported level
+level.js

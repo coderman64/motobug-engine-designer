@@ -47,7 +47,7 @@ class project:
 
 
             levelMap = file[file.find("TILEMAP:")+8:file.find("ITEMS",file.find("TILEMAP: "))]
-            currentLevel = level(renderer,self.tilesets[tileSetIndex]))
+            currentLevel = level(renderer,self.tilesets[tileSetIndex])
             currentLevel.lvFilePath = os.path.join(levelDir,i,"level1.mblvl")
             currentLevel.parseFromString(levelMap)
             self.levels.append(currentLevel)
@@ -69,21 +69,27 @@ class project:
         # load the project from the given filename
         try:
             self.loadProject(renderer,result)
+            # destroy the invisible root window
+            root.destroy()
+            return 0
+
         except Exception as e:
             tkMessagebox.showerror("Error opening project","""Could not open the project file specified: %s\nEnsure that your project has the correct directory structure and formatting.\n\nERROR: \n%s""" % (result,str(e)))
             self.levels = self.backupLevels
             self.tilesets = self.backupTilesets
-        # destroy the invisible root window
-        root.destroy()
+            # destroy the invisible root window
+            root.destroy()
+            return 1
     def save(self):
-        if not self.projPath
+        if self.projPath == "":
+            return
         levelFile = "TILESET: "
         levelFile += os.path.relpath(self.levels[0].tileSet.path,os.path.dirname(self.levels[0].lvFilePath))+"\n"
         levelFile += "TILEMAP:\n"
         levelFile += self.levels[0].getLevelAsString()
         levelFile += "\nITEMS:\n"
         print(levelFile)
-        open(self.levels[0].lvFilePath)
+        open(self.levels[0].lvFilePath,"w").write(levelFile)
     def getCurrentLevel(self):
         return self.levels[self.currentLevel]
             

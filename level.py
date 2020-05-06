@@ -9,17 +9,26 @@ class level:
         self.lvMap = [[-1,-1,-1,-1,-1],[1,1,1,1,1],[0,0,0,0,0]]
         self.lvFilePath = ""
         self.zone = "TestZone"
-    def draw(self,dx,dy):
+    def draw(self,dx,dy,selLayer=-1):
         rt = SDL_Rect()
         rt.x, rt.y, rt.w, rt.h = dx,dy,128,128
         for row in self.lvMap:
             for col in row:
-                if col >= 0 and col < self.tileSet.texCount:
+                if type(col) is int and col >= 0 and col < self.tileSet.texCount:
                     SDL_RenderCopy(self.rend,self.tileSet.getTex(col),None,rt)
+                elif type(col) is list:
+                    for layer in range(len(col))[::-1]:
+                        if col[layer] != -1:
+                            if selLayer != layer and selLayer != -1:
+                                SDL_SetTextureAlphaMod(self.tileSet.getTex(col[layer]),100)
+                                SDL_SetTextureColorMod(self.tileSet.getTex(col[layer]),255,100,100)
+                            SDL_RenderCopy(self.rend,self.tileSet.getTex(col[layer]),None,rt)
+                            SDL_SetTextureAlphaMod(self.tileSet.getTex(col[layer]),255)
+                            SDL_SetTextureColorMod(self.tileSet.getTex(col[layer]),255,255,255)
                 rt.x += 128
             rt.x = dx
             rt.y += 128
-    def add(self,x,y,id):
+    def add(self,x,y,id,layer=-1):
         if len(self.lvMap) == 0:
             self.lvMap = [[]]
         while len(self.lvMap) <= y: 
@@ -34,11 +43,28 @@ class level:
         while x >= len(self.lvMap[y]):
             for i in self.lvMap:
                 i.append(-1)
-        self.lvMap[y][x] = id
-    def remove(self,x,y):
+        if layer < 0:
+            self.lvMap[y][x] = id
+        else:
+            if not type(self.lvMap[y][x]) is list:
+                self.lvMap[y][x] = [self.lvMap[y][x] for i in range(layer)]
+            while len(self.lvMap[y][x]) <= layer:
+                self.lvMap[y][x].append(-1)
+            self.lvMap[y][x][layer] = id
+    def remove(self,x,y,layer=-1):
         if x < 0 or y < 0 or y >= len(self.lvMap) or x >= len(self.lvMap[y]):
             return
-        self.lvMap[y][x] = -1
+        if layer < 0:
+            self.lvMap[y][x] = -1
+        elif type(self.lvMap[y][x]) is list and len(self.lvMap[y][x]) > layer:
+            self.lvMap[y][x][layer] = -1
+            for i in range(len(self.lvMap[y][x]))[::-1]:
+                if not self.lvMap[y][x][i] == -1:
+                    break
+                self.lvMap[y][x].pop(i)
+            if len(self.lvMap[y][x]) == 0:
+                self.lvMap[y][x] = -1
+            
         if not (len(self.lvMap) == 1 and len(self.lvMap[0]) == 1):
             for row in self.lvMap:
                 rowEmpty = True
@@ -98,9 +124,24 @@ class level:
         for line in string.splitlines():
             x = 0
             if "," in line:
+                layer = -1
                 for i in line.split(","):
-                    self.add(x,y,int(i))
-                    x += 1
+                    if i.strip().startswith("[") and i.strip().endswith("]"):
+                        self.add(x,y,int(i[1:-1]),0)
+                    elif i.strip().startswith("["):
+                        print(i)
+                        self.add(x,y,int(i[1:]),0)
+                        layer = 1
+                    elif i.strip().endswith("]"):
+                        print(i)
+                        self.add(x,y,int(i[:-1]),layer)
+                        layer = -1
+                    else:
+                        self.add(x,y,int(i),layer)
+                        if layer >= 0:
+                            layer += 1
+                    if layer < 0:
+                        x += 1
                 y += 1
     def getLevelAsString(self):
         result = ""
