@@ -8,6 +8,7 @@ from math import *
 
 from fonttools import *
 from UI import *
+from projects import *
 
 def main():
     SDL_Init(SDL_INIT_VIDEO)
@@ -23,14 +24,21 @@ def main():
 
     SDL_SetRenderDrawBlendMode(mainRenderer,SDL_BLENDMODE_BLEND)
 
+    mainProject = project()
+
     tiles = tileSet(mainRenderer)
     tiles.loadTexFromFile("projects/CrystalGeyser/tiles.txt")
-    level1 = level(mainRenderer,tiles)
+    mainProject.levels = [level(mainRenderer,tiles)]
     
     tpal = tilePallet(mainRenderer,tiles)
 
     # set up the control bar
-    cBar = controlBar(mainRenderer,["icons/list.png"],[tpal.toggle])
+    cBar = controlBar(mainRenderer,
+            ["icons/list.png","icons/export.png","icons/open.png","icons/save.png"],
+            [tpal.toggle, 
+            lambda: mainProject.levels[0].export("./level.js"), 
+            lambda: mainProject.openWithDialog(mainRenderer),
+            mainProject.save])
 
     editorScale = 1
 
@@ -86,7 +94,7 @@ def main():
             # add tile
             if event.type == SDL_MOUSEBUTTONUP and event.button.button == SDL_BUTTON_LEFT and not mouseOut:
                 # add currently selected tile
-                level1.add(floor((mousex+camx*editorScale)/(128*editorScale)),floor((mousey+camy*editorScale)/(128*editorScale)),tpal.getSelectedTile())
+                mainProject.getCurrentLevel().add(floor((mousex+camx*editorScale)/(128*editorScale)),floor((mousey+camy*editorScale)/(128*editorScale)),tpal.getSelectedTile())
                 
                 # if tile was added out of bounds to the left or the top of the level, 
                 # change the camera position accordingly
@@ -109,7 +117,7 @@ def main():
             
             # remove tile
             if event.type == SDL_MOUSEBUTTONUP and event.button.button == SDL_BUTTON_RIGHT and not mouseOut:
-                level1.remove(floor((mousex+camx*editorScale)/(128*editorScale)),floor((mousey+camy*editorScale)/(128*editorScale)))
+                mainProject.getCurrentLevel().remove(floor((mousex+camx*editorScale)/(128*editorScale)),floor((mousey+camy*editorScale)/(128*editorScale)))
                 
             # keep track if CTRL is pressed or not
             if event.type == SDL_KEYDOWN and (event.key.keysym.sym == SDLK_LCTRL or event.key.keysym.sym == SDLK_RCTRL):
@@ -124,13 +132,13 @@ def main():
                 toolTipAlpha = 400
                 # zoom once for every unit change in y
                 for i in range(abs(event.wheel.y)):
-                    if event.wheel.y > 0:   # zoom in if the change in y is positive
+                    if event.wheel.y > 0 and editorScale < 10:   # zoom in if the change in y is positive
                         # change the scaling factor
                         editorScale *= 1.25
                         # recenter zooming around the center of the window
                         camx = ((winWidth.value/2+camx*editorScale*0.8)*1.25-winWidth.value/2)/editorScale
                         camy = ((winHeight.value/2+camy*editorScale*0.8)*1.25-winHeight.value/2)/editorScale
-                    else:
+                    elif event.wheel.y < 0 and editorScale > 0.01:
                         # change the scaling factor
                         editorScale *= 0.8
                         # recenter zooming around the center of the window
@@ -141,7 +149,7 @@ def main():
         SDL_RenderSetScale(mainRenderer,editorScale,editorScale)
 
         # draw the level itself
-        level1.draw(-round(camx),-round(camy))
+        mainProject.getCurrentLevel().draw(-round(camx),-round(camy))
 
         # draw the cursor highlight
         SDL_SetRenderDrawColor(mainRenderer, 255,255,255,100)

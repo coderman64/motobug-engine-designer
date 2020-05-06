@@ -1,7 +1,9 @@
 # motobug-engine-designer
 Python-based level designer for the [motobug engine](https://github.com/coderman64/motobug-engine).
 
-Currently deep in beta. It hasn't yet come to implement all possible features from the engine.
+It is currently deep in beta. It hasn't yet come to implement all possible features from the engine.
+
+Right now, I'm working more on the interface; the actual exporting functionality may come later.
 
 ![Screenshot 1](screenshots/screenshot1.png "Screenshot 1")
 

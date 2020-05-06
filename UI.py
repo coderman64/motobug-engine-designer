@@ -18,6 +18,8 @@ class controlBar:
             self.icons.append(SDL_CreateTextureFromSurface(self.rend,
                                             image))
         self.actions = actionList
+        self.lastInteracted = -1
+        self.interactionTimer = 0
 
     def draw(self):
         # get the display size
@@ -32,11 +34,18 @@ class controlBar:
         uiRect.x, uiRect.y, uiRect.w, uiRect.h = 0,0,dispw.value,40
         SDL_RenderFillRect(self.rend,uiRect)
 
-        uiRect.x = -36
-        for i in self.icons:
-            uiRect.x, uiRect.y, uiRect.w, uiRect.h = uiRect.x+40,4,32,32
-            SDL_RenderCopy(self.rend,i,None,uiRect)
+        for i in range(len(self.icons)):
+            if i == self.lastInteracted:
+                uiRect.x, uiRect.y, uiRect.w, uiRect.h = i*40+round(self.interactionTimer)+4,4+round(self.interactionTimer),32,32
+            else:
+                uiRect.x, uiRect.y, uiRect.w, uiRect.h = i*40+4,4,32,32
+            SDL_RenderCopy(self.rend,self.icons[i],None,uiRect)
+        if self.interactionTimer > 0:
+            self.interactionTimer -= 0.1
+        
     def interact(self,x):
         selectedAct = floor(x/40)
         if len(self.actions) > selectedAct and selectedAct >= 0:
             self.actions[selectedAct]()
+            self.lastInteracted = selectedAct
+            self.interactionTimer = 2

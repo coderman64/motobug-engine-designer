@@ -7,6 +7,8 @@ class level:
         self.rend = renderer
         self.tileSet = _tileSet
         self.lvMap = [[-1,-1,-1,-1,-1],[1,1,1,1,1],[0,0,0,0,0]]
+        self.lvFilePath = ""
+        self.zone = "TestZone"
     def draw(self,dx,dy):
         rt = SDL_Rect()
         rt.x, rt.y, rt.w, rt.h = dx,dy,128,128
@@ -38,7 +40,6 @@ class level:
             return
         self.lvMap[y][x] = -1
         if not (len(self.lvMap) == 1 and len(self.lvMap[0]) == 1):
-            print("DOING CLEANUP (%d,%d)" % (len(self.lvMap),len(self.lvMap[0])))
             for row in self.lvMap:
                 rowEmpty = True
                 for tile in row:
@@ -66,6 +67,46 @@ class level:
                     if colEmpty:
                         for i in self.lvMap:
                             i.pop(0)
+    def export(self,name):
+        level = self.lvMap
+        final = "level = [[],"
+        for y in range(len(level)):
+            final += "["
+            for x in range(len(level[y])):
+                if type(level[y][x]) == int:
+                    final += str(level[y][x])+","
+                else:
+                    final += "["
+                    for i in level[y][x]:
+                        final += str(i)+","
+                    final = final[:-1]+"],"
+                    print(final[final.rfind("["):])
+
+            final = final[:-1]+"],"
+        final += """];backgroundMusic.src = "res/music/Dig3.ogg";backgroundMusic.play();cBack = 0;chunks = [];thisScript = document.createElement("script");thisScript.src = "levels/CGTiles.js";document.body.appendChild(thisScript);"""
+        final += """levelName = ["%s","Zone","Act 0"]""" % self.zone
+        fFile = open(name,'w')
+        fFile.write(final)
+    def clear(self):
+        self.lvMap = [[]]
+    def parseFromString(self,string):
+        # clear the level map
+        self.clear()
+
+        # parse a new level map from the given string
+        x,y = 0,0
+        for line in string.splitlines():
+            x = 0
+            if "," in line:
+                for i in line.split(","):
+                    self.add(x,y,int(i))
+                    x += 1
+                y += 1
+    def getLevelAsString(self):
+        result = ""
+        for row in self.lvMap:
+            result += ",".join([str(i) for i in row])+"\n"
+        return result
 
     def getSize(self):
         return (len(self.lvMap[0]),len(self.lvMap))
