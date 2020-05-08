@@ -20,7 +20,7 @@ class controlBar:
         self.actions = actionList
         self.lastInteracted = -1
         self.interactionTimer = 0
-
+        self.hlList = [False for i in iconList]
     def draw(self):
         # get the display size
         dispw, disph = c_int(), c_int()
@@ -39,6 +39,9 @@ class controlBar:
                 uiRect.x, uiRect.y, uiRect.w, uiRect.h = i*40+round(self.interactionTimer)+4,4+round(self.interactionTimer),32,32
             else:
                 uiRect.x, uiRect.y, uiRect.w, uiRect.h = i*40+4,4,32,32
+            if self.hlList[i]:
+                SDL_SetRenderDrawColor(self.rend,255,255,255,255)
+                SDL_RenderFillRect(self.rend,uiRect)
             SDL_RenderCopy(self.rend,self.icons[i],None,uiRect)
         if self.interactionTimer > 0:
             self.interactionTimer -= 0.1
@@ -49,6 +52,8 @@ class controlBar:
             self.actions[selectedAct]()
             self.lastInteracted = selectedAct
             self.interactionTimer = 2
+    def toggleHighlight(self,index):
+        self.hlList[index] = not self.hlList[index]
     
 class layerPallet:
     def __init__(self,rend):

@@ -2,6 +2,13 @@ from defusedxml.ElementTree import parse
 from tkinter import *
 from tkinter.ttk import *
 from sdl2 import *
+from sdl2.sdlimage import *
+from sdl2.sdlttf import *
+from ctypes import c_int
+from math import floor
+
+from fonttools import quickRenderText
+
 
 
 class itemlist:
@@ -17,6 +24,7 @@ class itemlist:
 class itemUI(Tk):
     def __init__(self,item):
         itemType = item.itemType
+        self.item = item
         Tk.__init__(self)
         self.resizable(False,False)
         self.overrideredirect(1)
@@ -25,9 +33,9 @@ class itemUI(Tk):
         y = self.winfo_pointery()
         abs_coord_x = self.winfo_pointerx() - self.winfo_rootx()
         abs_coord_y = self.winfo_pointery() - self.winfo_rooty()
-        self.geometry("+%s+%s" % (str(abs_coord_x),str(abs_coord_y)))
+        self.geometry("+%s+%s" % (str(abs_coord_x-5),str(abs_coord_y-5)))
 
-
+        self.edits = {}
 
         label = Label(self,text=itemType.find('name').text)
         label.pack()
@@ -36,31 +44,36 @@ class itemUI(Tk):
             label.pack()
             paramType = i.find('type').text.strip()
             paramName = i.find('name').text
-            if paramType.startswith('float'):
-                print(str(item.params[paramName]))
+            if paramType.startswith('float') or paramType.startswith('position') or paramType.startswith('size'):
                 box = Entry(self,validate='key',validatecommand=(self.register(lambda e: str.isnumeric(e) ),'%S'))
                 box.insert(0,str(item.params[paramName]))
                 box.pack()
+                self.edits[paramName] = box
             elif paramType.startswith('string-path'):
                 box = Entry(self)
                 box.insert(0,item.params[paramName])
                 box.config(state='readonly')
                 box.pack()
+                self.edits[paramName] = box
                 dialButton = Button(self,text='Browse...')
                 dialButton.pack()
             else:
-                print(str(item.params[paramName]))
                 box = Entry(self)
                 box.insert(0,item.params[paramName])
                 box.pack()
+                self.edits[paramName] = box
         self.focus_force()
         self.bind("<FocusOut>",self.lostFocus)
+        self.bind("<Return>",self.exitUI)
         
         self.mainloop()
-    def lostFocus(self,e):
-        print(self.focus_get())
+    def lostFocus(self,e=None):
         if not self.focus_get() in self.winfo_children() and self.focus_get() != self:
-            self.destroy()
+            self.exitUI()
+    def exitUI(self,e=None):
+        for i in self.edits.keys():
+            self.item.setParam(i,str(self.edits[i].get()))
+        self.destroy()
 
 class item:
     def __init__(self,itemType,x,y):
@@ -76,7 +89,6 @@ class item:
                 self.params[i.find('name').text] = 100
             else:
                 self.params[i.find('name').text] = ""
-        print(self.params)
     def draw(self,renderer,dx,dy):
         for i in self.itemType.find('display'):
             if i.tag == 'rect':
@@ -118,6 +130,100 @@ class item:
         for i in self.params.keys():
             string = string.replace(i,str(self.params[i]))
         return string
+
+class itemPallet:
+    def __init__(self,rend,il):
+        """
+        create a tile pallet object
+        rend: SDL_Renderer responsible for drawing the pallet
+        il: itemList
+        """
+        self.itemList = il
+        self.open = False
+        self.xpos = 0
+        self.scroll = 0
+        self.rend = rend
+        self.ft_Mono16 = TTF_OpenFont(b"fonts/RobotoMono-Regular.ttf",16)
+        self.selected = -1
+    def draw(self):
+
+        if self.open:
+            self.xpos += (200-self.xpos)*0.1
+        else:
+            self.xpos += (-self.xpos)*0.1
+
+        # get the display size
+        dispw, disph = c_int(), c_int()
+        SDL_GetRendererOutputSize(self.rend,dispw,disph)
+
+        # don't waste resources drawing the pallet if it isn't onscreen
+        if self.xpos > 5:
+            #draw the background for the tile pallet
+            SDL_SetRenderDrawColor(self.rend,0,0,0,200)
+            rect = SDL_Rect()
+            rect.x, rect.y, rect.w, rect.h = round(self.xpos-200),0,200,disph.value
+            SDL_RenderFillRect(self.rend,rect)
+
+            # draw edge line 
+            SDL_SetRenderDrawColor(self.rend,255,255,255,255)
+            rect.x, rect.y, rect.w, rect.h = round(self.xpos-1),0,1,disph.value
+            SDL_RenderFillRect(self.rend,rect)
+
+            # draw tile previews
+            for i in range(len(self.itemList.items)+1):
+                # highlight selected tile
+                if i-1 == self.selected:
+                    rect.x, rect.y, rect.w, rect.h = round(self.xpos-185),i*150+45-self.scroll,138,138
+                    SDL_SetRenderDrawColor(self.rend,255,255,255,100)
+                    SDL_RenderFillRect(self.rend,rect)
+                # draw tile preview
+                rect.x, rect.y, rect.w, rect.h = round(self.xpos-180),i*150+50-self.scroll,128,128
+                if i >= 1:
+                    for x in self.itemList.items[i-1].find('display'):
+                        if x.tag == 'rect':
+                            colors = x.find('color').text[1:-1].split(',')
+                            SDL_SetRenderDrawColor(self.rend,int(colors[0]),int(colors[1]),int(colors[2]),int(colors[3]) if len(colors) > 3 else 255)
+                            SDL_RenderFillRect(self.rend,rect)
+                    #SDL_RenderCopy(self.rend,self.tileSet.getTex(i),None,rect)
+                    SDL_SetRenderDrawColor(self.rend,255,255,255,255)
+
+                    # draw the file name for the tile
+                    quickRenderText(self.rend,self.ft_Mono16,self.itemList.items[i-1].find('name').text.strip(),rect.x,rect.y+128)
+                else:
+                    #SDL_RenderCopy(self.rend,self.tileSet.getTex(i),None,rect)
+                    SDL_SetRenderDrawColor(self.rend,255,255,255,255)
+
+                    # draw the file name for the tile
+                    quickRenderText(self.rend,self.ft_Mono16,"Edit Only",rect.x,rect.y+128)
+    
+    def interact(self,mouseY):
+        index = floor((mouseY+self.scroll-50)/150)-1
+        if index >= -1 and index < len(self.itemList.items):
+            self.selected = index
+        #i*150+50-self.scroll
+        
+    def toggle(self):
+        self.open = not self.open
+
+    def scrollY(self,yrel):
+        # get the display size
+        dispw, disph = c_int(), c_int()
+        SDL_GetRendererOutputSize(self.rend,dispw,disph)
+
+        # scroll vertically
+        self.scroll += yrel
+
+        # limit scrolling
+        if self.scroll <= 0:
+            self.scroll = 0
+        if self.scroll+disph.value >= len(self.itemList.items)*150+178:
+            self.scroll = len(self.itemList.items)*150+178-disph.value
+            
+    
+    def getSelectedTile(self):
+        return self.selected
+        
+
 
 if __name__ == "__main__":
     IL = itemlist()

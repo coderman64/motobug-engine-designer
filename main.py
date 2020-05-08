@@ -9,6 +9,7 @@ from math import *
 from fonttools import *
 from UI import *
 from projects import *
+from items import *
 
 def main():
     global lastMessage
@@ -119,7 +120,7 @@ def openLoop(window,mainRenderer):
     editor(window,mainRenderer,mainProject)
 
 def editor(window,mainRenderer,mainProject):
-    global lastMessage
+    global lastMessage, itemMode
 
     lastMessage = "Welcome to Motobug Studo (beta 0.2)"
     oldMessage = lastMessage
@@ -128,6 +129,9 @@ def editor(window,mainRenderer,mainProject):
     
     tpal = tilePallet(mainRenderer,tiles)
     lpal = layerPallet(mainRenderer)
+    ipal = itemPallet(mainRenderer,mainProject.itemList)
+
+    itemMode = False
 
     def exportLevel():
         global lastMessage
@@ -137,6 +141,13 @@ def editor(window,mainRenderer,mainProject):
         global lastMessage
         mainProject.save()
         lastMessage = "project saved."
+    def toggleItemMode():
+        global itemMode
+        itemMode = not itemMode
+        temp = tpal.open
+        tpal.open = ipal.open
+        ipal.open = temp
+        cBar.toggleHighlight(5)
 
 
     # set up the control bar
@@ -147,14 +158,16 @@ def editor(window,mainRenderer,mainProject):
                 "icons/open.png",
                 "icons/save.png",
                 "icons/levelInfo.png",
+                "icons/itemMode.png",
                 "icons/layers.png"
             ],
             [
-                tpal.toggle, 
+                lambda: tpal.toggle() if not itemMode else ipal.toggle(), 
                 exportLevel, 
                 lambda: mainProject.openWithDialog(mainRenderer),
                 saveProject,
                 lambda: print("LEVEL INFO"),
+                toggleItemMode,
                 lpal.toggle
             ])
 
@@ -213,21 +226,36 @@ def editor(window,mainRenderer,mainProject):
                 # record the newest mouse position
                 mousex, mousey = event.motion.x, event.motion.y
 
-            # add tile
-            if event.type == SDL_MOUSEBUTTONUP and event.button.button == SDL_BUTTON_LEFT and not mouseOut:
-                # add currently selected tile
-                mainProject.getCurrentLevel().add(floor((mousex+camx*editorScale)/(128*editorScale)),floor((mousey+camy*editorScale)/(128*editorScale)),tpal.getSelectedTile(),lpal.getSelectedLayer())
+            if not itemMode:
+                # add tile
+                if event.type == SDL_MOUSEBUTTONUP and event.button.button == SDL_BUTTON_LEFT and not mouseOut:
+                    # add currently selected tile
+                    mainProject.getCurrentLevel().add(floor((mousex+camx*editorScale)/(128*editorScale)),floor((mousey+camy*editorScale)/(128*editorScale)),tpal.getSelectedTile(),lpal.getSelectedLayer())
+                    
+                    # if tile was added out of bounds to the left or the top of the level, 
+                    # change the camera position accordingly
+                    if floor((mousey+camy*editorScale)/(128*editorScale)) < 0:
+                        camy += 128*abs(floor((mousey+camy*editorScale)/(128*editorScale)))
+                    if floor((mousex+camx*editorScale)/(128*editorScale)) < 0:
+                        camx += 128*abs(floor((mousex+camx*editorScale)/(128*editorScale)))
                 
-                # if tile was added out of bounds to the left or the top of the level, 
-                # change the camera position accordingly
-                if floor((mousey+camy*editorScale)/(128*editorScale)) < 0:
-                    camy += 128*abs(floor((mousey+camy*editorScale)/(128*editorScale)))
-                if floor((mousex+camx*editorScale)/(128*editorScale)) < 0:
-                    camx += 128*abs(floor((mousex+camx*editorScale)/(128*editorScale)))
-            
-            # remove tile
-            if event.type == SDL_MOUSEBUTTONUP and event.button.button == SDL_BUTTON_RIGHT and not mouseOut:
-                mainProject.getCurrentLevel().remove(floor((mousex+camx*editorScale)/(128*editorScale)),floor((mousey+camy*editorScale)/(128*editorScale)),lpal.getSelectedLayer())
+                # remove tile
+                if event.type == SDL_MOUSEBUTTONUP and event.button.button == SDL_BUTTON_RIGHT and not mouseOut:
+                    mainProject.getCurrentLevel().remove(floor((mousex+camx*editorScale)/(128*editorScale)),floor((mousey+camy*editorScale)/(128*editorScale)),lpal.getSelectedLayer())
+            else:
+                if event.type == SDL_MOUSEBUTTONUP and event.button.button == SDL_BUTTON_RIGHT and not mouseOut:
+                    # loop through all items (in reverse, since later items appear on top)
+                    for i in mainProject.getCurrentLevel().items[::-1]:
+                        MousePt = SDL_Point()
+                        MousePt.x, MousePt.y = mousex,mousey
+                        MouseRect = SDL_Rect()
+                        MouseRect.x, MouseRect.y = i.getPos()
+                        MouseRect.x, MouseRect.y = round((MouseRect.x-camx)*editorScale),round((MouseRect.y-camy)*editorScale)
+                        MouseRect.w, MouseRect.h = [round(x*editorScale) for x in i.getSize()]
+                        # if the mouse is clicking on that item, open up the item UI for it
+                        if SDL_PointInRect(MousePt,MouseRect) == SDL_TRUE:
+                            itemUI(i)
+                            break
 
             # interact with the control bar
             if event.type == SDL_MOUSEBUTTONDOWN and event.button.button == SDL_BUTTON_LEFT and mousey <= 40:
@@ -236,6 +264,8 @@ def editor(window,mainRenderer,mainProject):
             # interact with the tilePallet
             if event.type == SDL_MOUSEBUTTONDOWN and event.button.button == SDL_BUTTON_LEFT and mousex < tpal.xpos:
                 tpal.interact(mousey)
+            if event.type == SDL_MOUSEBUTTONDOWN and event.button.button == SDL_BUTTON_LEFT and mousex < ipal.xpos:
+                ipal.interact(mousey)
 
             # scroll the tilePallet
             if event.type == SDL_MOUSEWHEEL and mouseOut and mousex < tpal.xpos:
@@ -283,7 +313,7 @@ def editor(window,mainRenderer,mainProject):
 
         # draw the cursor highlight
         SDL_SetRenderDrawColor(mainRenderer, 255,255,255,100)
-        if not mouseOut:
+        if not mouseOut and not itemMode:
             hlRect.x, hlRect.y, hlRect.w, hlRect.h = round(floor((mousex/editorScale+camx)/128)*128-camx), round(floor((mousey/editorScale+camy)/128)*128-camy), 128,128
             SDL_RenderFillRect(mainRenderer,hlRect)
 
@@ -291,10 +321,11 @@ def editor(window,mainRenderer,mainProject):
         SDL_RenderSetScale(mainRenderer,1,1)
 
         tpal.draw()
+        ipal.draw()
         lpal.draw()
         cBar.draw()
 
-        # draw the viewport scale in the corner
+        # draw the last tooltip text in the corner
         SDL_SetRenderDrawColor(mainRenderer, 255,255,255,min(max(toolTipAlpha,1),200))
         quickRenderText(mainRenderer,ft_Mono16,lastMessage,round(tpal.xpos)+10,winHeight.value-20)
 
@@ -303,8 +334,6 @@ def editor(window,mainRenderer,mainProject):
             toolTipAlpha -= 2
         else:
             lastMessage = ""
-
-        # 10,winHeight.value-texth.value,textw.value,texth.value
 
         # set the render color to black for the background
         SDL_SetRenderDrawColor(mainRenderer,0,0,0,0)

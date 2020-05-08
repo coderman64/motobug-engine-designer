@@ -157,10 +157,10 @@ class level:
                         newItem = item(i,0,0)
                         pIndex = 0
                         for p in i.find('parameters'):
-                            print("SETTING PARAM %s to %s" % (p.find('name').text,itemParams[pIndex]))
                             newItem.setParam(p.find('name').text,itemParams[pIndex])
                             pIndex += 1
                         self.items.append(newItem)
+                        break
 
 
     def getLevelAsString(self):
