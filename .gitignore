@@ -6,3 +6,6 @@ __pycache__
 
 # exported level
 level.js
+
+# motobug engine project
+motobug-engine

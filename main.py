@@ -301,6 +301,8 @@ def editor(window,mainRenderer,mainProject):
         # fade away the scaling text
         if toolTipAlpha > 0:
             toolTipAlpha -= 2
+        else:
+            lastMessage = ""
 
         # 10,winHeight.value-texth.value,textw.value,texth.value
 

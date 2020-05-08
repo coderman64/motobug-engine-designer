@@ -7,6 +7,7 @@ from sdl2 import *
 
 from tileset import *
 from level import *
+from items import *
 
 class project:
     def __init__(self):
@@ -15,6 +16,7 @@ class project:
         self.currentLevel = 0
         self.backupTilesets = []
         self.backupLevels = []
+        self.itemList = itemlist()
 
         self.projPath = ""
     def loadProject(self,renderer,filename):
@@ -26,9 +28,15 @@ class project:
         self.tilesets.clear()
         self.levels.clear()
 
-        # get the path for the levels directory
+        # get the path for the pkg directory
         filepath = os.path.dirname(os.path.abspath(filename))
-        self.projPath = filepath
+        itemDir = os.path.join(filepath,'pkg')
+
+        #import all itemLists
+        for i in os.listdir(itemDir):
+            self.itemList.loadItemList(os.path.join(itemDir,i))
+
+        # get the path for the levels directory
         levelDir = os.path.join(filepath,'levels')
 
         # import all levels and tilesets
@@ -45,15 +53,21 @@ class project:
             else:
                 tileSetIndex = [ts.path for ts in self.tilesets].index(tileSetName)
 
-
-            levelMap = file[file.find("TILEMAP:")+8:file.find("ITEMS",file.find("TILEMAP: "))]
+            # parse the level map
+            levelMap = file[file.find("TILEMAP:")+8:file.rfind("ITEMS:")]
+            print(levelMap+"\n\n========")
             currentLevel = level(renderer,self.tilesets[tileSetIndex])
             currentLevel.lvFilePath = os.path.join(levelDir,i,"level1.mblvl")
             currentLevel.parseFromString(levelMap)
+
+            # parse the item list
+            itemList = file[file.find('\n',file.rfind("ITEMS")):]
+            currentLevel.parseItems(itemList,self.itemList)
+
             self.levels.append(currentLevel)
-            print(currentLevel.getLevelAsString())
         # set the currently selected level to 0
         self.currentLevel = 0
+        self.projPath = filepath
 
         # upon successful completion, clear the backups (to save on memory)
         self.backupTilesets.clear()
@@ -88,6 +102,7 @@ class project:
         levelFile += "TILEMAP:\n"
         levelFile += self.levels[0].getLevelAsString()
         levelFile += "\nITEMS:\n"
+        levelFile += "\n".join([i.getString() for i in self.levels[0].items])
         print(levelFile)
         open(self.levels[0].lvFilePath,"w").write(levelFile)
     def getCurrentLevel(self):

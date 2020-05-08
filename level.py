@@ -1,5 +1,6 @@
 from tileset import tileSet
 from sdl2 import *
+from items import *
 
 
 class level:
@@ -9,6 +10,7 @@ class level:
         self.lvMap = [[-1,-1,-1,-1,-1],[1,1,1,1,1],[0,0,0,0,0]]
         self.lvFilePath = ""
         self.zone = "TestZone"
+        self.items = []
     def draw(self,dx,dy,selLayer=-1):
         rt = SDL_Rect()
         rt.x, rt.y, rt.w, rt.h = dx,dy,128,128
@@ -28,6 +30,8 @@ class level:
                 rt.x += 128
             rt.x = dx
             rt.y += 128
+        for i in self.items:
+            i.draw(self.rend,dx,dy)
     def add(self,x,y,id,layer=-1):
         if len(self.lvMap) == 0:
             self.lvMap = [[]]
@@ -106,7 +110,6 @@ class level:
                     for i in level[y][x]:
                         final += str(i)+","
                     final = final[:-1]+"],"
-                    print(final[final.rfind("["):])
 
             final = final[:-1]+"],"
         final += """];backgroundMusic.src = "res/music/Dig3.ogg";backgroundMusic.play();cBack = 0;chunks = [];thisScript = document.createElement("script");thisScript.src = "levels/CGTiles.js";document.body.appendChild(thisScript);"""
@@ -129,11 +132,9 @@ class level:
                     if i.strip().startswith("[") and i.strip().endswith("]"):
                         self.add(x,y,int(i[1:-1]),0)
                     elif i.strip().startswith("["):
-                        print(i)
                         self.add(x,y,int(i[1:]),0)
                         layer = 1
                     elif i.strip().endswith("]"):
-                        print(i)
                         self.add(x,y,int(i[:-1]),layer)
                         layer = -1
                     else:
@@ -143,6 +144,25 @@ class level:
                     if layer < 0:
                         x += 1
                 y += 1
+    def parseItems(self,itemString,_itemlist):
+        itemList = itemString.splitlines()
+        for i in itemList:
+            if not ("(" in i and ")" in i):
+                continue
+            else:
+                itemType = i[:i.find("(")]
+                itemParams = i[i.find("(")+1:i.find(")")].split(",")
+                for i in _itemlist.items:
+                    if i.find('format').text.strip().startswith(itemType):
+                        newItem = item(i,0,0)
+                        pIndex = 0
+                        for p in i.find('parameters'):
+                            print("SETTING PARAM %s to %s" % (p.find('name').text,itemParams[pIndex]))
+                            newItem.setParam(p.find('name').text,itemParams[pIndex])
+                            pIndex += 1
+                        self.items.append(newItem)
+
+
     def getLevelAsString(self):
         result = ""
         for row in self.lvMap:
