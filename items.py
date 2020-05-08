@@ -45,7 +45,7 @@ class itemUI(Tk):
             paramType = i.find('type').text.strip()
             paramName = i.find('name').text
             if paramType.startswith('float') or paramType.startswith('position') or paramType.startswith('size'):
-                box = Entry(self,validate='key',validatecommand=(self.register(lambda e: str.isnumeric(e) ),'%S'))
+                box = Entry(self,validate='key',validatecommand=(self.register(lambda e: e.isdecimal() ),'%S'))
                 box.insert(0,str(item.params[paramName]))
                 box.pack()
                 self.edits[paramName] = box
@@ -62,6 +62,8 @@ class itemUI(Tk):
                 box.insert(0,item.params[paramName])
                 box.pack()
                 self.edits[paramName] = box
+        self.destroyButton = Button(self,text = "Delete",command=self.setDestroy)
+        self.destroyButton.pack()
         self.focus_force()
         self.bind("<FocusOut>",self.lostFocus)
         self.bind("<Return>",self.exitUI)
@@ -74,11 +76,15 @@ class itemUI(Tk):
         for i in self.edits.keys():
             self.item.setParam(i,str(self.edits[i].get()))
         self.destroy()
+    def setDestroy(self,e=None):
+        self.item.setDestroy()
+        self.destroy()
 
 class item:
     def __init__(self,itemType,x,y):
         self.itemType = itemType
         self.params = {}
+        self.destroy = False
         for i in itemType.find('parameters'):
             paramType = i.find('type').text.strip()
             if paramType.startswith('position-x'):
@@ -130,6 +136,8 @@ class item:
         for i in self.params.keys():
             string = string.replace(i,str(self.params[i]))
         return string
+    def setDestroy(self):
+        self.destroy = True
 
 class itemPallet:
     def __init__(self,rend,il):
@@ -220,7 +228,7 @@ class itemPallet:
             self.scroll = len(self.itemList.items)*150+178-disph.value
             
     
-    def getSelectedTile(self):
+    def getSelectedItem(self):
         return self.selected
         
 

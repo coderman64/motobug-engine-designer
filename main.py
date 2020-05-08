@@ -196,7 +196,7 @@ def editor(window,mainRenderer,mainProject):
 
         # define situations where the mouse isn't available to the main editor
         # space
-        mouseOut = mousey <= 40 or mousex <= tpal.xpos or mousex >= winWidth.value-lpal.xpos
+        mouseOut = mousey <= 40 or mousex <= tpal.xpos or mousex >= winWidth.value-lpal.xpos or mousex <= ipal.xpos
 
         if lastMessage != oldMessage:
             toolTipAlpha = 400
@@ -242,6 +242,11 @@ def editor(window,mainRenderer,mainProject):
                 # remove tile
                 if event.type == SDL_MOUSEBUTTONUP and event.button.button == SDL_BUTTON_RIGHT and not mouseOut:
                     mainProject.getCurrentLevel().remove(floor((mousex+camx*editorScale)/(128*editorScale)),floor((mousey+camy*editorScale)/(128*editorScale)),lpal.getSelectedLayer())
+            
+                if event.type == SDL_KEYUP and event.key.keysym.sym == SDLK_z and ctrlPress:
+                    mainProject.getCurrentLevel().undo()
+                elif event.type == SDL_KEYUP and event.key.keysym.sym == SDLK_y and ctrlPress:
+                    mainProject.getCurrentLevel().redo()
             else:
                 if event.type == SDL_MOUSEBUTTONUP and event.button.button == SDL_BUTTON_RIGHT and not mouseOut:
                     # loop through all items (in reverse, since later items appear on top)
@@ -256,6 +261,16 @@ def editor(window,mainRenderer,mainProject):
                         if SDL_PointInRect(MousePt,MouseRect) == SDL_TRUE:
                             itemUI(i)
                             break
+                if event.type == SDL_MOUSEBUTTONUP and event.button.button == SDL_BUTTON_LEFT and not mouseOut and ipal.getSelectedItem() >= 0:
+                    newItem = item(ipal.itemList.items[ipal.getSelectedItem()],round(mousex/editorScale+camx),round(mousey/editorScale+camy))
+
+                    # if Ctrl is not pressed, snap the item to the grid
+                    if not ctrlPress:
+                        newItem.setParam('x',floor((mousex/editorScale+camx)/16)*16)
+                        newItem.setParam('y',floor((mousey/editorScale+camy)/16)*16)
+                    newItem.setParam('w',32)
+                    newItem.setParam('h',32)
+                    mainProject.getCurrentLevel().items.append(newItem)
 
             # interact with the control bar
             if event.type == SDL_MOUSEBUTTONDOWN and event.button.button == SDL_BUTTON_LEFT and mousey <= 40:

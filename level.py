@@ -11,6 +11,8 @@ class level:
         self.lvFilePath = ""
         self.zone = "TestZone"
         self.items = []
+        self.undoList = []
+        self.redoList = []
     def draw(self,dx,dy,selLayer=-1):
         rt = SDL_Rect()
         rt.x, rt.y, rt.w, rt.h = dx,dy,128,128
@@ -32,7 +34,9 @@ class level:
             rt.y += 128
         for i in self.items:
             i.draw(self.rend,dx,dy)
-    def add(self,x,y,id,layer=-1):
+            if i.destroy:
+                self.items.remove(i)
+    def add(self,x,y,id,layer=-1,undo=True):
         if len(self.lvMap) == 0:
             self.lvMap = [[]]
         while len(self.lvMap) <= y: 
@@ -45,8 +49,14 @@ class level:
                 i.insert(0,-1)
             x += 1
         while x >= len(self.lvMap[y]):
-            for i in self.lvMap:
+            for i in self.lvMap: 
                 i.append(-1)
+        if undo and type(self.lvMap[y][x]) is int:
+            self.undoList.append([x,y,self.lvMap[y][x]])
+            self.redoList = []
+        elif undo:
+            self.undoList.append([x,y,self.lvMap[y][x].copy()])
+            self.redoList = []
         if layer < 0:
             self.lvMap[y][x] = id
         else:
@@ -55,9 +65,15 @@ class level:
             while len(self.lvMap[y][x]) <= layer:
                 self.lvMap[y][x].append(-1)
             self.lvMap[y][x][layer] = id
-    def remove(self,x,y,layer=-1):
+    def remove(self,x,y,layer=-1,undo=True):
         if x < 0 or y < 0 or y >= len(self.lvMap) or x >= len(self.lvMap[y]):
             return
+        if undo and type(self.lvMap[y][x]) is int:
+            self.undoList.append([x,y,self.lvMap[y][x]])
+            self.redoList = []
+        elif undo:
+            self.undoList.append([x,y,self.lvMap[y][x].copy()])
+            self.redoList = []
         if layer < 0:
             self.lvMap[y][x] = -1
         elif type(self.lvMap[y][x]) is list and len(self.lvMap[y][x]) > layer:
@@ -68,7 +84,8 @@ class level:
                 self.lvMap[y][x].pop(i)
             if len(self.lvMap[y][x]) == 0:
                 self.lvMap[y][x] = -1
-            
+        self.cleanExterior()
+    def cleanExterior(self):
         if not (len(self.lvMap) == 1 and len(self.lvMap[0]) == 1):
             for row in self.lvMap:
                 rowEmpty = True
@@ -118,6 +135,28 @@ class level:
         fFile.write(final)
     def clear(self):
         self.lvMap = [[]]
+        self.undoList = []
+        self.redoList = []
+    def undo(self):
+        if len(self.undoList) > 0:
+            step = self.undoList.pop()
+            print(step)
+            if type(self.lvMap[step[1]][step[0]]) is int:
+                self.redoList.append([step[0],step[1],self.lvMap[step[1]][step[0]]])
+            else:
+                self.redoList.append([step[0],step[1],self.lvMap[step[1]][step[0]].copy()])
+            self.add(step[0],step[1],step[2],-1,False)
+            self.cleanExterior()
+    def redo(self):
+        if len(self.redoList) > 0:
+            step = self.redoList.pop()
+            print(step)
+            if type(self.lvMap[step[1]][step[0]]) is int:
+                self.undoList.append([step[0],step[1],self.lvMap[step[1]][step[0]]])
+            else:
+                self.undoList.append([step[0],step[1],self.lvMap[step[1]][step[0]].copy()])
+            self.add(step[0],step[1],step[2],-1,False)
+            self.cleanExterior()
     def parseFromString(self,string):
         # clear the level map
         self.clear()
@@ -144,6 +183,8 @@ class level:
                     if layer < 0:
                         x += 1
                 y += 1
+        self.undoList = []
+        self.redoList = []
     def parseItems(self,itemString,_itemlist):
         itemList = itemString.splitlines()
         for i in itemList:
