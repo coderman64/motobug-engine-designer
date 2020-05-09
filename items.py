@@ -37,9 +37,7 @@ class item:
             elif paramType.startswith('position-y'):
                 self.params[i.find('name').text] = y
             elif paramType.startswith('float') or paramType.startswith('position') or paramType.startswith('size'):
-                print(paramType,i.get('default'))
                 self.params[i.find('name').text] = float(i.get('default')) if i.get("default") and isFloat(i.get("default")) else 32
-                print(self.params[i.find('name').text])
             elif paramType.startswith('int'):
                 self.params[i.find('name').text] = int(i.get('default')) if i.get("default") and i.get("default").isdigit() else 1
             else:

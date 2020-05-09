@@ -143,7 +143,6 @@ class level:
     def undo(self):
         if len(self.undoList) > 0:
             step = self.undoList.pop()
-            print(step)
             if type(self.lvMap[step[1]][step[0]]) is int:
                 self.redoList.append([step[0],step[1],self.lvMap[step[1]][step[0]]])
             else:
@@ -153,7 +152,6 @@ class level:
     def redo(self):
         if len(self.redoList) > 0:
             step = self.redoList.pop()
-            print(step)
             if type(self.lvMap[step[1]][step[0]]) is int:
                 self.undoList.append([step[0],step[1],self.lvMap[step[1]][step[0]]])
             else:

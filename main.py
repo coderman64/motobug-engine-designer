@@ -21,6 +21,10 @@ def main():
     if not window:
         print("WINDOW COULD NOT BE CREATED!")
         exit(1)
+    
+    # set window icon
+    icon = IMG_Load(b"icons/motobug.png")
+    SDL_SetWindowIcon(window,icon)
 
     mainRenderer = SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED)
 
@@ -308,7 +312,9 @@ def editor(window,mainRenderer,mainProject):
             if event.type == SDL_KEYUP and (event.key.keysym.sym == SDLK_LCTRL or event.key.keysym.sym == SDLK_RCTRL):
                 ctrlPress = False
             
-           
+            # save the project with Ctrl-S
+            if event.type == SDL_KEYUP and ctrlPress and event.key.keysym.sym == SDLK_s:
+               saveProject()
             
             # zooming 
             if event.type == SDL_MOUSEWHEEL and ctrlPress:
