@@ -13,6 +13,7 @@ class level:
         self.items = []
         self.undoList = []
         self.redoList = []
+        self.project = None
     def draw(self,dx,dy,selLayer=-1):
         rt = SDL_Rect()
         rt.x, rt.y, rt.w, rt.h = dx,dy,128,128
@@ -62,7 +63,7 @@ class level:
         else:
             if not type(self.lvMap[y][x]) is list:
                 self.lvMap[y][x] = [self.lvMap[y][x] for i in range(layer)]
-            while len(self.lvMap[y][x]) <= layer:
+            while len(self.lvMap[y][x]) <= min(2,layer):
                 self.lvMap[y][x].append(-1)
             self.lvMap[y][x][layer] = id
     def remove(self,x,y,layer=-1,undo=True):
@@ -84,6 +85,8 @@ class level:
                 self.lvMap[y][x].pop(i)
             if len(self.lvMap[y][x]) == 0:
                 self.lvMap[y][x] = -1
+            while len(self.lvMap[y][x]) <= 2:
+                self.lvMap[y][x].append(-1)
         self.cleanExterior()
     def cleanExterior(self):
         if not (len(self.lvMap) == 1 and len(self.lvMap[0]) == 1):
@@ -116,7 +119,7 @@ class level:
                             i.pop(0)
     def export(self,name):
         level = self.lvMap
-        final = "level = [[],"
+        final = "level = [["+",".join(["new "+i.getString() for i in self.items])+"],"
         for y in range(len(level)):
             final += "["
             for x in range(len(level[y])):
@@ -169,7 +172,7 @@ class level:
                 layer = -1
                 for i in line.split(","):
                     if i.strip().startswith("[") and i.strip().endswith("]"):
-                        self.add(x,y,int(i[1:-1]),0)
+                        self.add(x,y,[int(i[1:-1]),-1],-1)
                     elif i.strip().startswith("["):
                         self.add(x,y,int(i[1:]),0)
                         layer = 1
@@ -198,7 +201,7 @@ class level:
                         newItem = item(i,0,0)
                         pIndex = 0
                         for p in i.find('parameters'):
-                            newItem.setParam(p.find('name').text,itemParams[pIndex])
+                            newItem.setParam(p.find('name').text,itemParams[pIndex][1:-1].replace('\\"','"') if itemParams[pIndex].startswith('"') else itemParams[pIndex])
                             pIndex += 1
                         self.items.append(newItem)
                         break

@@ -34,6 +34,45 @@
     <item>
         <name>Spring</name>
         <parameters>
+            <pmr default="0">
+                <name>x</name>
+                <type>position-x</type>
+            </pmr>
+            <pmr default="0">
+                <name>y</name>
+                <type>position-y</type>
+            </pmr>
+            <pmr>
+                <name>w</name>
+                <type>size-w</type>
+            </pmr>
+            <pmr>
+                <name>h</name>
+                <type>size-h</type>
+            </pmr>
+            <pmr default="res/items/springY.png">
+                <name>src</name>
+                <type>string-path</type>
+            </pmr>
+            <pmr default="12">
+                <name>power</name>
+                <type>float</type>
+            </pmr>
+            <pmr default="0">
+                <name>angle</name>
+                <type>float-angle</type>
+            </pmr>
+        </parameters>
+        <display>
+            <rect>
+                <color>(255,255,0)</color>
+            </rect>
+        </display>
+        <format>spring(x,y,w,h,src,power,angle)</format>
+    </item>
+    <item>
+        <name>Horizontal Layer Switch</name>
+        <parameters>
             <pmr>
                 <name>x</name>
                 <type>position-x</type>
@@ -50,17 +89,44 @@
                 <name>h</name>
                 <type>size-h</type>
             </pmr>
+            <pmr default="0">
+                <name>layerL</name>
+                <type>int</type>
+            </pmr>
+            <pmr default="1">
+                <name>layerR</name>
+                <type>int</type>
+            </pmr>
+        </parameters>
+        <display>
+            <rect>
+                <color>(255,0,0,200)</color>
+            </rect>
+        </display>
+        <format>layerSwitch(x,y,w,h,layerL,layerR)</format> 
+    </item>
+    <item>
+        <name>Ring</name>
+        <parameters>
             <pmr>
+                <name>x</name>
+                <type>position-x</type>
+            </pmr>
+            <pmr>
+                <name>y</name>
+                <type>position-y</type>
+            </pmr>
+            <pmr default="16">
+                <name>w</name>
+                <type>size-w</type>
+            </pmr>
+            <pmr default="16">
+                <name>h</name>
+                <type>size-h</type>
+            </pmr>
+            <pmr default="res/items/ring.png">
                 <name>src</name>
                 <type>string-path</type>
-            </pmr>
-            <pmr>
-                <name>power</name>
-                <type>float</type>
-            </pmr>
-            <pmr>
-                <name>angle</name>
-                <type>float-angle</type>
             </pmr>
         </parameters>
         <display>
@@ -68,7 +134,7 @@
                 <color>(255,255,0)</color>
             </rect>
         </display>
-        <format>spring(x,y,w,h,src,power,angle)</format>
+        <format>ring(x,y,w,h,src)</format>
     </item>
 </itemset>
 

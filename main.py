@@ -259,7 +259,7 @@ def editor(window,mainRenderer,mainProject):
                         MouseRect.w, MouseRect.h = [round(x*editorScale) for x in i.getSize()]
                         # if the mouse is clicking on that item, open up the item UI for it
                         if SDL_PointInRect(MousePt,MouseRect) == SDL_TRUE:
-                            itemUI(i)
+                            itemUI(i,mainProject.projPath)
                             break
                 if event.type == SDL_MOUSEBUTTONUP and event.button.button == SDL_BUTTON_LEFT and not mouseOut and ipal.getSelectedItem() >= 0:
                     newItem = item(ipal.itemList.items[ipal.getSelectedItem()],round(mousex/editorScale+camx),round(mousey/editorScale+camy))
@@ -268,8 +268,9 @@ def editor(window,mainRenderer,mainProject):
                     if not ctrlPress:
                         newItem.setParam('x',floor((mousex/editorScale+camx)/16)*16)
                         newItem.setParam('y',floor((mousey/editorScale+camy)/16)*16)
-                    newItem.setParam('w',32)
-                    newItem.setParam('h',32)
+                    if newItem.getParam('w') <= 0 or newItem.getParam('h') <= 0:
+                        newItem.setParam('w',32)
+                        newItem.setParam('h',32)
                     mainProject.getCurrentLevel().items.append(newItem)
 
             # interact with the control bar
@@ -279,20 +280,27 @@ def editor(window,mainRenderer,mainProject):
             # interact with the tilePallet
             if event.type == SDL_MOUSEBUTTONDOWN and event.button.button == SDL_BUTTON_LEFT and mousex < tpal.xpos:
                 tpal.interact(mousey)
-            if event.type == SDL_MOUSEBUTTONDOWN and event.button.button == SDL_BUTTON_LEFT and mousex < ipal.xpos:
-                ipal.interact(mousey)
 
             # scroll the tilePallet
             if event.type == SDL_MOUSEWHEEL and mouseOut and mousex < tpal.xpos:
                 tpal.scrollY(-event.wheel.y*40)
+
+            # interact with the item pallet
+            if event.type == SDL_MOUSEBUTTONDOWN and event.button.button == SDL_BUTTON_LEFT and mousex < ipal.xpos:
+                ipal.interact(mousey)
+
+            #scroll the item pallet
+            if event.type == SDL_MOUSEWHEEL and mousex < ipal.xpos:
+                ipal.scrollY(-event.wheel.y*40)
             
             # interact with the layer pallet
             if event.type == SDL_MOUSEBUTTONDOWN and event.button.button == SDL_BUTTON_LEFT and mousex > winWidth.value-lpal.xpos:
                 lpal.interact(mousey)
 
-            # scroll the tilePallet
+            # scroll the layer Pallet
             if event.type == SDL_MOUSEWHEEL and mouseOut and mousex > winWidth.value-lpal.xpos:
                 lpal.scrollY(-event.wheel.y*40)
+                
 
             # keep track if CTRL is pressed or not
             if event.type == SDL_KEYDOWN and (event.key.keysym.sym == SDLK_LCTRL or event.key.keysym.sym == SDLK_RCTRL):
@@ -342,12 +350,12 @@ def editor(window,mainRenderer,mainProject):
 
         # draw the last tooltip text in the corner
         SDL_SetRenderDrawColor(mainRenderer, 255,255,255,min(max(toolTipAlpha,1),200))
-        quickRenderText(mainRenderer,ft_Mono16,lastMessage,round(tpal.xpos)+10,winHeight.value-20)
+        quickRenderText(mainRenderer,ft_Mono16,lastMessage,round(max(tpal.xpos,ipal.xpos))+10,winHeight.value-20)
 
         # fade away the scaling text
         if toolTipAlpha > 0:
             toolTipAlpha -= 2
-        else:
+        elif lastMessage == oldMessage:
             lastMessage = ""
 
         # set the render color to black for the background

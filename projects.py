@@ -56,11 +56,13 @@ class project:
             # parse the level map
             levelMap = file[file.find("TILEMAP:")+8:file.rfind("ITEMS:")]
             currentLevel = level(renderer,self.tilesets[tileSetIndex])
+            currentLevel.project = self
             currentLevel.lvFilePath = os.path.join(levelDir,i,"level1.mblvl")
             currentLevel.parseFromString(levelMap)
 
             # parse the item list
             itemList = file[file.find('\n',file.rfind("ITEMS")):]
+            currentLevel.items.clear()
             currentLevel.parseItems(itemList,self.itemList)
 
             self.levels.append(currentLevel)
