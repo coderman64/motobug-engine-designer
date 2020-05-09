@@ -12,7 +12,15 @@ Current features:
 * supports multiple layers
 * can export to a .js file (readable by the motobug engine)
 
-![Screenshot 1](screenshots/screenshot2.png "Screenshot 1")
+### Screenshots:
+![Screenshot](screenshots/Screenshot3.png "Current Screenshot")
+^ Item editing system (Current screenshot)
+
+![Screenshot](screenshots/Screenshot2.png "Old Screenshot 1")
+^ Tile layering system (Old screenshot)
+
+![Screenshot](screenshots/Screenshot1.png "Old Screenshot 1")
+^ Tile editing system (Old screenshot)
 
 ## How do I get it running?
 
