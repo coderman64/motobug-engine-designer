@@ -118,7 +118,10 @@ class itemUI(Tk):
         self.item = item
         Tk.__init__(self)
         self.resizable(False,False)
-        self.overrideredirect(1)
+        # remove the window decoration of the context window in windows
+        # this causes problems on linux. OSX is untested
+        if sys.platform.startswith("win"):
+            self.overrideredirect(1)
 
         x = self.winfo_pointerx()
         y = self.winfo_pointery()
