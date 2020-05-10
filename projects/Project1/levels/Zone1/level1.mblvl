@@ -14,7 +14,7 @@ TILEMAP:
 
 ITEMS:
 spring(432,608,32,32,"res/items/springY.png",12,100)
-spring(688,608,32,32,"res/items/springY.png",12,100)
+spring(688,608,32,32,"res/items/springR.png",12,100)
 spring(2288,864,32,32,"res/items/springY.png",12,0)
 spring(2736,864,32,32,"res/items/springY.png",12,0)
 spring(3120,864,32,32,"res/items/springY.png",12,0)
@@ -88,7 +88,7 @@ ring(688,480,16.0,16.0,"res/items/ring.png")
 ring(688,448,16.0,16.0,"res/items/ring.png")
 ring(432,512,16.0,16.0,"res/items/ring.png")
 ring(432,480,16.0,16.0,"res/items/ring.png")
-ring(432,448,16.0,16.0,"res/items/ring.png")
+ring(432,448,16,16,"res/items/ring.png")
 ring(560,656,16.0,16.0,"res/items/ring.png")
 ring(560,624,16.0,16.0,"res/items/ring.png")
 ring(560,592,16.0,16.0,"res/items/ring.png")

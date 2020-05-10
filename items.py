@@ -12,7 +12,7 @@ import os
 from fonttools import quickRenderText
 
 def isFloat(string):
-    return all(c in "0123456789.+-" for c in string)
+    return all(c in "0123456789." for c in string)
 
 class itemlist:
     """stores item definitions"""

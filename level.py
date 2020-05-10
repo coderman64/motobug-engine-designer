@@ -239,3 +239,7 @@ class level:
                 if iui.hadChanged():
                     self.unchanged = False
                 break
+
+class levelProperties:
+    def __init__(self):
+        pass

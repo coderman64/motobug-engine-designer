@@ -124,7 +124,7 @@ def openLoop(window,mainRenderer):
     editor(window,mainRenderer,mainProject)
 
 def editor(window,mainRenderer,mainProject):
-    global lastMessage, itemMode
+    global lastMessage, toolTipAlpha, itemMode
 
     lastMessage = "Welcome to Motobug Studo (beta 0.2)"
     oldMessage = lastMessage
@@ -142,8 +142,9 @@ def editor(window,mainRenderer,mainProject):
         mainProject.levels[0].export("./level.js")
         lastMessage = "project exported to ./level.js"
     def saveProject():
-        global lastMessage
+        global lastMessage, toolTipAlpha
         mainProject.save()
+        toolTipAlpha = 400
         lastMessage = "project saved."
         cBar.hitButton(3)
     def toggleItemMode():
