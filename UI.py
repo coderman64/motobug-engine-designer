@@ -55,7 +55,7 @@ class controlBar:
             self.lastInteracted = selectedAct
             self.interactionTimer = 2
     def hitButton(self,index):
-        """animate button like it has been pressed (does not run relevant function"""
+        """animate button like it has been pressed (!!does NOT run relevant function!!)"""
         if len(self.actions) > index and index >= 0:
             self.lastInteracted = index
             self.interactionTimer = 2

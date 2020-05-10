@@ -15,7 +15,7 @@ def main():
     global lastMessage
     SDL_Init(SDL_INIT_VIDEO)
     TTF_Init()
-    window = SDL_CreateWindow(b"Motobug Studio (beta 0.2)",
+    window = SDL_CreateWindow(b"Motobug Studio (beta 0.4)",
                                 SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                 640,480, SDL_WINDOW_SHOWN)
     if not window:
@@ -145,6 +145,7 @@ def editor(window,mainRenderer,mainProject):
         global lastMessage
         mainProject.save()
         lastMessage = "project saved."
+        cBar.hitButton(3)
     def toggleItemMode():
         global itemMode
         itemMode = not itemMode
