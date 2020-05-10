@@ -208,8 +208,9 @@ def editor(window,mainRenderer,mainProject):
 
         event = SDL_Event()
         while(SDL_PollEvent(ctypes.byref(event))):
-            if(event.type == SDL_QUIT or (event.type == SDL_KEYUP and event.key.keysym.sym == SDLK_ESCAPE)):
-                looping = False
+            if(event.type == SDL_QUIT): # or (event.type == SDL_KEYUP and event.key.keysym.sym == SDLK_ESCAPE)):
+                if CloseAndSave(mainProject):
+                    looping = False
 
             # panning 
             if event.type == SDL_MOUSEBUTTONDOWN and event.button.button == SDL_BUTTON_MIDDLE:
@@ -253,18 +254,7 @@ def editor(window,mainRenderer,mainProject):
                     mainProject.getCurrentLevel().redo()
             else:
                 if event.type == SDL_MOUSEBUTTONUP and event.button.button == SDL_BUTTON_RIGHT and not mouseOut:
-                    # loop through all items (in reverse, since later items appear on top)
-                    for i in mainProject.getCurrentLevel().items[::-1]:
-                        MousePt = SDL_Point()
-                        MousePt.x, MousePt.y = mousex,mousey
-                        MouseRect = SDL_Rect()
-                        MouseRect.x, MouseRect.y = i.getPos()
-                        MouseRect.x, MouseRect.y = round((MouseRect.x-camx)*editorScale),round((MouseRect.y-camy)*editorScale)
-                        MouseRect.w, MouseRect.h = [round(x*editorScale) for x in i.getSize()]
-                        # if the mouse is clicking on that item, open up the item UI for it
-                        if SDL_PointInRect(MousePt,MouseRect) == SDL_TRUE:
-                            itemUI(i,mainProject.projPath)
-                            break
+                    mainProject.getCurrentLevel().openItemMenuAt(mousex,mousey,camx,camy,editorScale)
                 if event.type == SDL_MOUSEBUTTONUP and event.button.button == SDL_BUTTON_LEFT and not mouseOut and ipal.getSelectedItem() >= 0:
                     newItem = item(ipal.itemList.items[ipal.getSelectedItem()],round(mousex/editorScale+camx),round(mousey/editorScale+camy))
 
@@ -275,7 +265,7 @@ def editor(window,mainRenderer,mainProject):
                     if newItem.getParam('w') <= 0 or newItem.getParam('h') <= 0:
                         newItem.setParam('w',32)
                         newItem.setParam('h',32)
-                    mainProject.getCurrentLevel().items.append(newItem)
+                    mainProject.getCurrentLevel().addItem(newItem)
 
             # interact with the control bar
             if event.type == SDL_MOUSEBUTTONDOWN and event.button.button == SDL_BUTTON_LEFT and mousey <= 40:

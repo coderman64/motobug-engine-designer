@@ -65,6 +65,9 @@ class project:
             currentLevel.items.clear()
             currentLevel.parseItems(itemList,self.itemList)
 
+            # reset level state to "unchanged"
+            currentLevel.setUnchanged()
+
             self.levels.append(currentLevel)
         # set the currently selected level to 0
         self.currentLevel = 0
@@ -96,16 +99,27 @@ class project:
             root.destroy()
             return 1
     def save(self):
+        # if no project is open, don't save it (there is nothing to save)
         if self.projPath == "":
             return
+        
+        # write tileset information
         levelFile = "TILESET: "
         levelFile += os.path.relpath(self.levels[0].tileSet.path,os.path.dirname(self.levels[0].lvFilePath))+"\n"
+
+        # write tilemap information
         levelFile += "TILEMAP:\n"
         levelFile += self.levels[0].getLevelAsString()
+
+        # add level items
         levelFile += "\nITEMS:\n"
         levelFile += "\n".join([i.getString() for i in self.levels[0].items])
-        print(levelFile)
+
+        # write to the level file
         open(self.levels[0].lvFilePath,"w").write(levelFile)
+
+        # reset level state to "unchanged"
+        self.levels[0].setUnchanged()
     def getCurrentLevel(self):
         return self.levels[self.currentLevel]
             

@@ -14,6 +14,7 @@ class level:
         self.undoList = []
         self.redoList = []
         self.project = None
+        self.unchanged = True
     def draw(self,dx,dy,selLayer=-1):
         rt = SDL_Rect()
         rt.x, rt.y, rt.w, rt.h = dx,dy,128,128
@@ -37,6 +38,7 @@ class level:
             i.draw(self.rend,dx,dy)
             if i.destroy:
                 self.items.remove(i)
+                self.unchanged = False
     def add(self,x,y,id,layer=-1,undo=True):
         if len(self.lvMap) == 0:
             self.lvMap = [[]]
@@ -66,6 +68,7 @@ class level:
             while len(self.lvMap[y][x]) <= min(2,layer):
                 self.lvMap[y][x].append(-1)
             self.lvMap[y][x][layer] = id
+        self.unchanged = False
     def remove(self,x,y,layer=-1,undo=True):
         if x < 0 or y < 0 or y >= len(self.lvMap) or x >= len(self.lvMap[y]):
             return
@@ -88,6 +91,7 @@ class level:
             while len(self.lvMap[y][x]) <= 2:
                 self.lvMap[y][x].append(-1)
         self.cleanExterior()
+        self.unchanged = False
     def cleanExterior(self):
         if not (len(self.lvMap) == 1 and len(self.lvMap[0]) == 1):
             for row in self.lvMap:
@@ -203,7 +207,9 @@ class level:
                             pIndex += 1
                         self.items.append(newItem)
                         break
-
+    def setUnchanged(self):
+        """set state to "unchanged." Should only happen when the project is saved"""
+        self.unchanged = True
 
     def getLevelAsString(self):
         result = ""
@@ -213,3 +219,23 @@ class level:
 
     def getSize(self):
         return (len(self.lvMap[0]),len(self.lvMap))
+    
+    def addItem(self,item):
+        self.unchanged = False
+        self.items.append(item)
+    
+    def openItemMenuAt(self,x,y,dx,dy,editorScale):
+        # loop through all items (in reverse, since later items appear on top)
+        for i in self.items[::-1]:
+            pos = SDL_Point()
+            pos.x, pos.y = x,y
+            rect = SDL_Rect()
+            rect.x, rect.y = i.getPos()
+            rect.x, rect.y = round((rect.x-dx)*editorScale),round((rect.y-dy)*editorScale)
+            rect.w, rect.h = [round(x*editorScale) for x in i.getSize()]
+            # if the location is on the item, open the itemUI for that item
+            if SDL_PointInRect(pos,rect) == SDL_TRUE:
+                iui = itemUI(i,self.project.projPath)
+                if iui.hadChanged():
+                    self.unchanged = False
+                break

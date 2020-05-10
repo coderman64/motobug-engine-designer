@@ -164,7 +164,7 @@ class itemUI(Tk):
         self.bind("<FocusOut>",self.lostFocus)
         self.bind("<Return>",self.exitUI)
         self.destructable = True
-        
+        self.changed = False
         self.mainloop()
     def lostFocus(self,e=None):
         if not self.focus_get() in self.winfo_children() and self.focus_get() != self and self.destructable:
@@ -172,7 +172,9 @@ class itemUI(Tk):
     def exitUI(self,e=None):
         for i in self.edits.keys():
             if self.edits[i].get():
-                self.item.setParam(i,str(self.edits[i].get()))
+                if self.item.getParam(i) != str(self.edits[i].get()):
+                    self.item.setParam(i,str(self.edits[i].get()))
+                    self.changed = True
         self.destroy()
     def setDestroy(self,e=None):
         self.item.setDestroy()
@@ -181,6 +183,9 @@ class itemUI(Tk):
         self.destructable = False
     def enableDestruction(self):
         self.destructable = True
+    def hadChanged(self):
+        """returns true if the UI changed any values in the item"""
+        return self.changed
 
 class itemPallet:
     def __init__(self,rend,il):

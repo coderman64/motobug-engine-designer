@@ -4,6 +4,8 @@ from sdl2.sdlimage import *
 from sdl2.sdlttf import *
 from fonttools import *
 from math import floor
+from projects import *
+from tkinter import messagebox
 
 
 class controlBar:
@@ -52,8 +54,25 @@ class controlBar:
             self.actions[selectedAct]()
             self.lastInteracted = selectedAct
             self.interactionTimer = 2
+    def hitButton(self,index):
+        """animate button like it has been pressed (does not run relevant function"""
+        if len(self.actions) > index and index >= 0:
+            self.lastInteracted = index
+            self.interactionTimer = 2
     def toggleHighlight(self,index):
         self.hlList[index] = not self.hlList[index]
+
+def CloseAndSave(project):
+    if not project.getCurrentLevel().unchanged:
+        root = Tk()
+        root.withdraw()
+        shouldSave = messagebox.askyesnocancel("Close and Save Project","The project has been changed. Do you want to save before exiting?")
+        if shouldSave:
+            project.save()
+        root.destroy()
+        return shouldSave in [True,False]
+    else:
+        return True
     
 class layerPallet:
     def __init__(self,rend):
