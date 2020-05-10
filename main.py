@@ -32,6 +32,7 @@ def main():
     openLoop(window,mainRenderer)
 
 def openLoop(window,mainRenderer):
+    SDL_RestoreWindow(window)
     SDL_SetWindowResizable(window,SDL_FALSE)
     SDL_SetWindowSize(window,640,480)
     SDL_SetWindowPosition(window,SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED)
@@ -195,7 +196,7 @@ def editor(window,mainRenderer,mainProject):
     selectedTile = 0
 
     # window width and height values (updated within loop)
-    winWidth,winHeight = ctypes.c_long(640), ctypes.c_long(480)
+    winWidth,winHeight = ctypes.c_int(640), ctypes.c_int(480)
 
     while looping:
         SDL_GetWindowSize(window,winWidth,winHeight)
