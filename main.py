@@ -195,7 +195,7 @@ def editor(window,mainRenderer,mainProject):
     looping = True
 
     # keep track of editor conditions and controls
-    camx, camy = 0,-32
+    camx, camy = 0,0
     mousex, mousey = 0,0
     mouseMoving = False
     ctrlPress = False
@@ -238,8 +238,8 @@ def editor(window,mainRenderer,mainProject):
             if event.type == SDL_MOUSEMOTION:
                 # if panning is active, pan the display with the given mouse motion
                 if mouseMoving:
-                    camx -= event.motion.xrel / editorScale
-                    camy -= event.motion.yrel / editorScale
+                    mainProject.getCurrentLevel().camx -= event.motion.xrel / editorScale
+                    mainProject.getCurrentLevel().camy -= event.motion.yrel / editorScale
                 # record the newest mouse position
                 mousex, mousey = event.motion.x, event.motion.y
 
@@ -251,10 +251,10 @@ def editor(window,mainRenderer,mainProject):
                     
                     # if tile was added out of bounds to the left or the top of the level, 
                     # change the camera position accordingly
-                    if floor((mousey+camy*editorScale)/(128*editorScale)) < 0:
-                        camy += 128*abs(floor((mousey+camy*editorScale)/(128*editorScale)))
-                    if floor((mousex+camx*editorScale)/(128*editorScale)) < 0:
-                        camx += 128*abs(floor((mousex+camx*editorScale)/(128*editorScale)))
+                    # if floor((mousey+camy*editorScale)/(128*editorScale)) < 0:
+                    #     camy += 128*abs(floor((mousey+camy*editorScale)/(128*editorScale)))
+                    # if floor((mousex+camx*editorScale)/(128*editorScale)) < 0:
+                    #     camx += 128*abs(floor((mousex+camx*editorScale)/(128*editorScale)))
                 
                 # remove tile
                 if event.type == SDL_MOUSEBUTTONUP and event.button.button == SDL_BUTTON_RIGHT and not mouseOut:
@@ -266,7 +266,7 @@ def editor(window,mainRenderer,mainProject):
                     mainProject.getCurrentLevel().redo()
             else:
                 if event.type == SDL_MOUSEBUTTONUP and event.button.button == SDL_BUTTON_RIGHT and not mouseOut:
-                    mainProject.getCurrentLevel().openItemMenuAt(mousex,mousey,camx,camy,editorScale)
+                    mainProject.getCurrentLevel().openItemMenuAt(mousex,mousey,editorScale)
                 if event.type == SDL_MOUSEBUTTONUP and event.button.button == SDL_BUTTON_LEFT and not mouseOut and ipal.getSelectedItem() >= 0:
                     newItem = item(ipal.itemList.items[ipal.getSelectedItem()],round(mousex/editorScale+camx),round(mousey/editorScale+camy))
 
@@ -336,11 +336,14 @@ def editor(window,mainRenderer,mainProject):
                         camy = ((winHeight.value/2+camy*editorScale*1.25)*0.8-winHeight.value/2)/editorScale
                     lastMessage = "scale: "+str(round(editorScale*100))+"%"
 
+        camx = mainProject.getCurrentLevel().camx
+        camy = mainProject.getCurrentLevel().camy
+
         # scale the editor display based on the scaling factor
         SDL_RenderSetScale(mainRenderer,editorScale,editorScale)
 
         # draw the level itself
-        mainProject.getCurrentLevel().draw(-round(camx),-round(camy),lpal.getSelectedLayer())
+        mainProject.getCurrentLevel().draw(lpal.getSelectedLayer())
 
         # draw the cursor highlight
         SDL_SetRenderDrawColor(mainRenderer, 255,255,255,100)

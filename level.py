@@ -18,14 +18,15 @@ class level:
         self.redoList = []
         self.project = None
         self.unchanged = True
-    def draw(self,dx,dy,selLayer=-1):
+        self.camx = 0
+        self.camy = -32
+    def draw(self,selLayer=-1):
         """
-        draw the level to the renderer\n
-        \tdx, dy: the position of the level compared to the upper left corner
-        \t\tof the screen
+        draw the level to the renderer
         \tselLayer (optional): the layer which should be drawn as selected
         \t\t(-1 for all layers)
         """
+        dx,dy = -round(self.camx),-round(self.camy)
         rt = SDL_Rect()
         rt.x, rt.y, rt.w, rt.h = dx,dy,128,128
         for row in self.lvMap:
@@ -65,11 +66,21 @@ class level:
         while y < 0:
             self.lvMap.insert(0,[-1 for i in self.lvMap[0]])
             self.moveAllItemsBy(0,128)
+            self.camy += 128
+            for i in self.undoList:
+                i[1] += 1
+            for i in self.redoList:
+                i[1] += 1
             y += 1
         while x < 0:
             for i in self.lvMap:
                 i.insert(0,-1)
             self.moveAllItemsBy(128,0)
+            self.camx += 128
+            for i in self.undoList:
+                i[0] += 1
+            for i in self.redoList:
+                i[0] += 1
             x += 1
         while x >= len(self.lvMap[y]):
             for i in self.lvMap: 
@@ -122,8 +133,10 @@ class level:
         self.unchanged = False
 
     def cleanExterior(self):
-        """remove empty rows and columns around the outside of the level's
-        map"""
+        """
+        remove empty rows and columns around the outside of the level's
+        map. 
+        """
         if not (len(self.lvMap) == 1 and len(self.lvMap[0]) == 1):
             rowindex = 0
             while rowindex < len(self.lvMap):
@@ -135,7 +148,12 @@ class level:
                 if rowEmpty:
                     self.lvMap.pop(rowindex)
                     self.moveAllItemsBy(0,-128)
+                    self.camy -= 128
                     rowindex -= 1
+                    for i in self.undoList:
+                        i[1] -= 1
+                    for i in self.redoList:
+                        i[1] -= 1
                 else:
                     break
                 rowindex += 1
@@ -161,6 +179,11 @@ class level:
                         for i in self.lvMap:
                             i.pop(0)
                         self.moveAllItemsBy(-128,0)
+                        self.camx -= 128
+                        for i in self.undoList:
+                            i[0] -= 1
+                        for i in self.redoList:
+                            i[0] -= 1  
                                 
     def moveAllItemsBy(self,dx,dy):
         """move all items in the level by a certain amount (in pixels)"""
@@ -196,17 +219,18 @@ class level:
         self.undoList = []
         self.redoList = []
     def undo(self):
-        """undo the previously completed tile action (UNSTABLE!)"""
+        """undo the previously completed tile action"""
         if len(self.undoList) > 0:
             step = self.undoList.pop()
             if type(self.lvMap[step[1]][step[0]]) is int:
-                self.redoList.append([step[0],step[1],self.lvMap[step[1]][step[0]]])
+                redostep = [step[0],step[1],self.lvMap[step[1]][step[0]]]
             else:
-                self.redoList.append([step[0],step[1],self.lvMap[step[1]][step[0]].copy()])
+                redostep = [step[0],step[1],self.lvMap[step[1]][step[0]]].copy()
+            self.redoList.append(redostep)
             self.add(step[0],step[1],step[2],-1,False)
             self.cleanExterior()
     def redo(self):
-        """redo the last undoed tile action (UNSTABLE!)"""
+        """redo the last undoed tile action"""
         if len(self.redoList) > 0:
             step = self.redoList.pop()
             if type(self.lvMap[step[1]][step[0]]) is int:
@@ -294,12 +318,12 @@ class level:
         self.unchanged = False
         self.items.append(item)
     
-    def openItemMenuAt(self,x,y,dx,dy,editorScale):
+    def openItemMenuAt(self,x,y,editorScale):
         """Opens an itemUI at the given x and y position. Additional values are
         required to detect which item to open a UI for:\n
-        \tdx,dy: camera pan position
         \teditorScale: the scale of the view
         """
+        dx,dy = self.camx, self.camy
         # loop through all items (in reverse, since later items appear on top)
         for i in self.items[::-1]:
             pos = SDL_Point()
