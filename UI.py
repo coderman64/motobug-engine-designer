@@ -63,6 +63,12 @@ class controlBar:
         self.hlList[index] = not self.hlList[index]
 
 def CloseAndSave(project):
+    """
+    if the project isn't saved, open a dialog to ask the user if they want it
+    to be. Save the level if yes, don't save the level on no. Returns True in
+    all cases except when cancel is pressed, or the dialog is closed with the 
+    "x" button
+    """
     if not project.getCurrentLevel().unchanged:
         root = Tk()
         root.withdraw()

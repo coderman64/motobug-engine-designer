@@ -1,9 +1,46 @@
-NAME: DemoZone | Zone | Act 1
-MUSIC: res/music/Dig2.ogg
-BKGINDEX: 0
+NAME: Special Stage | Zone | Act 1
+MUSIC: res/music/Dig3.ogg
+BKGINDEX: 2
 TILESET: tiles.mbtiles
 TILEMAP:
-1,1,1
-0,0,0
+0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1
+0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1
+0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1
+0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1
+0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1
+0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1
+0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1
+0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,1,1,1
+0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,0,0,0,0
+0,-1,-1,11,1,1,10,-1,-1,-1,11,1,0,0,0,0
+0,-1,-1,0,14,15,0,-1,-1,-1,0,0,0,0,0,0
+0,-1,-1,0,-1,-1,0,-1,-1,-1,0,0,0,0,0,0
+0,6,-1,[-1, 0],[-1, 6],[7],[0, -1, -1],-1,-1,7,0,0,0,0,-1,-1
+0,8,1,1,1,9,0,1,1,9,0,0,0,0,-1,-1
 
 ITEMS:
+spring(1504,1120,32,32,"res/items/springY.png",12.0,0.0)
+layerSwitch(256,1536,128,128,0,0)
+layerSwitch(624,1280,32,32,1,0)
+layerSwitch(896,1536,128,128,1,1)
+ring(736,1392,16.0,16.0,"res/items/ring.png")
+ring(736,1424,16.0,16.0,"res/items/ring.png")
+ring(736,1456,16.0,16.0,"res/items/ring.png")
+ring(736,1488,16.0,16.0,"res/items/ring.png")
+ring(736,1520,16.0,16.0,"res/items/ring.png")
+ring(528,1392,16.0,16.0,"res/items/ring.png")
+ring(528,1424,16.0,16.0,"res/items/ring.png")
+ring(528,1456,16.0,16.0,"res/items/ring.png")
+ring(528,1488,16.0,16.0,"res/items/ring.png")
+ring(528,1520,16.0,16.0,"res/items/ring.png")
+ring(1248,1296,16.0,16.0,"res/items/ring.png")
+ring(1248,1360,16.0,16.0,"res/items/ring.png")
+ring(1248,1424,16.0,16.0,"res/items/ring.png")
+ring(1248,1488,16.0,16.0,"res/items/ring.png")
+ring(1040,1632,16.0,16.0,"res/items/ring.png")
+ring(1072,1632,16.0,16.0,"res/items/ring.png")
+ring(1104,1632,16.0,16.0,"res/items/ring.png")
+ring(1504,1040,16.0,16.0,"res/items/ring.png")
+ring(1504,1008,16.0,16.0,"res/items/ring.png")
+ring(1504,976,16.0,16.0,"res/items/ring.png")
+ring(1504,944,16.0,16.0,"res/items/ring.png")

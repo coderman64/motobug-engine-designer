@@ -63,10 +63,12 @@ class project:
         # load basic project settings from the .mbproj file
         mbproj = open(filename).read().splitlines()
         for i in mbproj:
+            print(i[11:].strip(),i[11:].strip().isdecimal())
             if i.startswith("CURRENTLVL:") and i[11:].strip().isdecimal():
                 self.currentLevel = int(i[11:].strip())
+                print("deci: %d" % self.currentLevel)
             if i.startswith("EXPORTPATH:"):
-                self.exportPath = i[12:].strip()
+                self.exportPath = i[11:].strip()
 
         # get the path for the pkg directory
         filepath = os.path.dirname(os.path.abspath(filename))
@@ -114,8 +116,7 @@ class project:
             currentLevel.setUnchanged()
 
             self.levels.append(currentLevel)
-        # set the currently selected level to 0
-        self.currentLevel = 0
+        
         self.projPath = filepath
         self.projFile = filename
 
@@ -157,28 +158,9 @@ class project:
 
         open(self.projFile,'w').write(projectFile)
 
-        # save basic level information
-        levelFile = "NAME: " + self.levels[0].zone +"\n"
-        levelFile += "MUSIC: " + self.levels[0].musicPath +"\n"
-        levelFile += "BKGINDEX: " + str(self.levels[0].bkgIndex) +"\n"
-
-        # write tileset information
-        levelFile += "TILESET: "
-        levelFile += os.path.relpath(self.levels[0].tileSet.path,os.path.dirname(self.levels[0].lvFilePath))+"\n"
-
-        # write tilemap information
-        levelFile += "TILEMAP:\n"
-        levelFile += self.levels[0].getLevelAsString()
-
-        # add level items
-        levelFile += "\nITEMS:\n"
-        levelFile += "\n".join([i.getString() for i in self.levels[0].items])
-
-        # write to the level file
-        open(self.levels[0].lvFilePath,"w").write(levelFile)
-
-        # reset level state to "unchanged"
-        self.levels[0].setUnchanged()
+        for i in self.levels:
+            if not i.unchanged:
+                i.save()
     def export(self):
         """export the project using a dialog"""
         self.exportCanceled = False
@@ -225,7 +207,7 @@ class project:
         
         copytree(os.path.join(self.projPath,"res"),os.path.join(self.exportPath,"res"),dirs_exist_ok=True)
         self.save()
-        
+
         return True
     def runProject(self):
         """similar to export, but runs the project after exporting"""

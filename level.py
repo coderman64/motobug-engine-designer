@@ -127,8 +127,9 @@ class level:
                 self.lvMap[y][x].pop(i)
             if len(self.lvMap[y][x]) == 0:
                 self.lvMap[y][x] = -1
-            while len(self.lvMap[y][x]) <= 2:
-                self.lvMap[y][x].append(-1)
+            else:
+                while len(self.lvMap[y][x]) <= 2:
+                    self.lvMap[y][x].append(-1)
         self.cleanExterior()
         self.unchanged = False
 
@@ -190,6 +191,29 @@ class level:
         for i in self.items:
             pos = i.getPos()
             i.setPos(pos[0]+dx,pos[1]+dy)
+    def save(self):
+        # save basic level information
+        levelFile = "NAME: " + self.zone +"\n"
+        levelFile += "MUSIC: " + self.musicPath +"\n"
+        levelFile += "BKGINDEX: " + str(self.bkgIndex) +"\n"
+
+        # write tileset information
+        levelFile += "TILESET: "
+        levelFile += os.path.relpath(self.tileSet.path,os.path.dirname(self.lvFilePath))+"\n"
+
+        # write tilemap information
+        levelFile += "TILEMAP:\n"
+        levelFile += self.getLevelAsString()
+
+        # add level items
+        levelFile += "\nITEMS:\n"
+        levelFile += "\n".join([i.getString() for i in self.items])
+
+        # write to the level file
+        open(self.lvFilePath,"w").write(levelFile)
+
+        # reset level state to "unchanged"
+        self.setUnchanged()
     def export(self,name):
         """
         export the level to the file at "name" in a Motobug-engine-compatible 

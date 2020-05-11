@@ -155,14 +155,14 @@ def editor(window,mainRenderer,mainProject):
         mainProject.save()
         toolTipAlpha = 400
         lastMessage = "project saved."
-        cBar.hitButton(3)
+        cBar.hitButton(4)
     def toggleItemMode():
         global itemMode
         itemMode = not itemMode
         temp = tpal.open
         tpal.open = ipal.open
         ipal.open = temp
-        cBar.toggleHighlight(5)
+        cBar.toggleHighlight(6)
 
     # set up the control bar
     cBar = controlBar(mainRenderer,
@@ -322,18 +322,20 @@ def editor(window,mainRenderer,mainProject):
             if event.type == SDL_MOUSEWHEEL and ctrlPress:
                 # zoom once for every unit change in y
                 for i in range(abs(event.wheel.y)):
+                    camx = mainProject.getCurrentLevel().camx
+                    camy = mainProject.getCurrentLevel().camy
                     if event.wheel.y > 0 and editorScale < 10:   # zoom in if the change in y is positive
                         # change the scaling factor
                         editorScale *= 1.25
                         # recenter zooming around the center of the window
-                        camx = ((winWidth.value/2+camx*editorScale*0.8)*1.25-winWidth.value/2)/editorScale
-                        camy = ((winHeight.value/2+camy*editorScale*0.8)*1.25-winHeight.value/2)/editorScale
+                        mainProject.getCurrentLevel().camx = ((winWidth.value/2+camx*editorScale*0.8)*1.25-winWidth.value/2)/editorScale
+                        mainProject.getCurrentLevel().camy = ((winHeight.value/2+camy*editorScale*0.8)*1.25-winHeight.value/2)/editorScale
                     elif event.wheel.y < 0 and editorScale > 0.01:
                         # change the scaling factor
                         editorScale *= 0.8
                         # recenter zooming around the center of the window
-                        camx = ((winWidth.value/2+camx*editorScale*1.25)*0.8-winWidth.value/2)/editorScale
-                        camy = ((winHeight.value/2+camy*editorScale*1.25)*0.8-winHeight.value/2)/editorScale
+                        mainProject.getCurrentLevel().camx = ((winWidth.value/2+camx*editorScale*1.25)*0.8-winWidth.value/2)/editorScale
+                        mainProject.getCurrentLevel().camy = ((winHeight.value/2+camy*editorScale*1.25)*0.8-winHeight.value/2)/editorScale
                     lastMessage = "scale: "+str(round(editorScale*100))+"%"
 
         camx = mainProject.getCurrentLevel().camx
