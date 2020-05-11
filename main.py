@@ -138,10 +138,18 @@ def editor(window,mainRenderer,mainProject):
 
     itemMode = False
 
-    def exportLevel():
+    def exportGame():
         global lastMessage
-        mainProject.levels[0].export("./level.js")
-        lastMessage = "project exported to ./level.js"
+        if mainProject.export():
+            lastMessage = "project exported to %s" % mainProject.exportPath
+        else:
+            lastMessage = "export canceled"
+    def exportAndPlay():
+        global lastMessage
+        if mainProject.runProject():
+            lastMessage = "Running!"
+        else:
+            lastMessage = "export canceled"
     def saveProject():
         global lastMessage, toolTipAlpha
         mainProject.save()
@@ -161,6 +169,7 @@ def editor(window,mainRenderer,mainProject):
             [
                 "icons/list.png",
                 "icons/export.png",
+                "icons/run.png",
                 "icons/open.png",
                 "icons/save.png",
                 "icons/levelInfo.png",
@@ -169,7 +178,8 @@ def editor(window,mainRenderer,mainProject):
             ],
             [
                 lambda: tpal.toggle() if not itemMode else ipal.toggle(), 
-                exportLevel, 
+                exportGame, 
+                exportAndPlay,
                 lambda: mainProject.openWithDialog(mainRenderer),
                 saveProject,
                 levelInfoOpener(mainProject),
