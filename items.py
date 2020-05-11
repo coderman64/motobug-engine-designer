@@ -71,6 +71,19 @@ class item:
         except:
             pos = [-1,-1]
         return pos
+    
+    def setPos(self,x,y):
+        """
+        Returns a list containing the x and y coordinates of the item. If not 
+        available, returns (-1,-1)
+        """
+        for i in self.itemType.find('parameters'):
+            paramType = i.find('type').text.strip()
+            if paramType.startswith('position-x'):
+                self.params[i.find('name').text] = x
+            if paramType.startswith('position-y'):
+                self.params[i.find('name').text] = y
+    
     def getSize(self):
         """
         Returns a list containing the x and y coordinates of the item. If not 

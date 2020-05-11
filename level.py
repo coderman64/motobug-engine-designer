@@ -64,10 +64,12 @@ class level:
             self.lvMap.append([-1 for i in self.lvMap[0]])
         while y < 0:
             self.lvMap.insert(0,[-1 for i in self.lvMap[0]])
+            self.moveAllItemsBy(0,128)
             y += 1
         while x < 0:
             for i in self.lvMap:
                 i.insert(0,-1)
+            self.moveAllItemsBy(128,0)
             x += 1
         while x >= len(self.lvMap[y]):
             for i in self.lvMap: 
@@ -87,6 +89,7 @@ class level:
                 self.lvMap[y][x].append(-1)
             self.lvMap[y][x][layer] = id
         self.unchanged = False
+
     def remove(self,x,y,layer=-1,undo=True):
         """
         remove the tile at the given position\n
@@ -117,28 +120,37 @@ class level:
                 self.lvMap[y][x].append(-1)
         self.cleanExterior()
         self.unchanged = False
+
     def cleanExterior(self):
         """remove empty rows and columns around the outside of the level's
         map"""
         if not (len(self.lvMap) == 1 and len(self.lvMap[0]) == 1):
-            for row in self.lvMap:
+            rowindex = 0
+            while rowindex < len(self.lvMap):
                 rowEmpty = True
+                row = self.lvMap[rowindex]
+                for tile in row:
+                    if not tile == -1:
+                        rowEmpty = False
+                if rowEmpty:
+                    self.lvMap.pop(rowindex)
+                    self.moveAllItemsBy(0,-128)
+                    rowindex -= 1
+                else:
+                    break
+                rowindex += 1
+            rowindex = len(self.lvMap)-1
+            while rowindex >= 0:
+                rowEmpty = True
+                row = self.lvMap[rowindex]
                 for tile in row:
                     if tile != -1:
                         rowEmpty = False
                 if rowEmpty:
-                    self.lvMap.remove(row)
+                    self.lvMap.pop(rowindex)
                 else:
                     break
-            for row in self.lvMap[::-1]:
-                rowEmpty = True
-                for tile in row:
-                    if tile != -1:
-                        rowEmpty = False
-                if rowEmpty:
-                    self.lvMap.remove(row)
-                else:
-                    break
+                rowindex -= 1
             if not len(self.lvMap) == 0:
                 colEmpty = True
                 while colEmpty:
@@ -148,6 +160,13 @@ class level:
                     if colEmpty:
                         for i in self.lvMap:
                             i.pop(0)
+                        self.moveAllItemsBy(-128,0)
+                                
+    def moveAllItemsBy(self,dx,dy):
+        """move all items in the level by a certain amount (in pixels)"""
+        for i in self.items:
+            pos = i.getPos()
+            i.setPos(pos[0]+dx,pos[1]+dy)
     def export(self,name):
         """
         export the level to the file at "name" in a Motobug-engine-compatible 
@@ -332,7 +351,8 @@ class levelInfo(Tk):
         self.nameBox.grid(row=1,column=1,columnspan=2,sticky="ew")
 
         Label(self,text="Music Path:").grid(row=2,column=0)
-        self.musicBox = Entry(self)
+        self.musicVar = StringVar()
+        self.musicBox = Entry(self,textvariable=self.musicVar)
         self.musicBox.insert(0,self.project.getCurrentLevel().musicPath)
         self.musicBox.config(state="readonly")
         self.musicBox.grid(row=2,column=1)
@@ -340,7 +360,8 @@ class levelInfo(Tk):
         self.musicBrowse.grid(row=2,column=2)
         
         Label(self,text="Background Index:").grid(row=3,column=0)
-        self.backBox = Entry(self,validate='key',validatecommand=(self.register(lambda e: e.isdigit() ),'%S'))
+        self.backVar = StringVar()
+        self.backBox = Entry(self,validate='key',validatecommand=(self.register(lambda e: e.isdigit() ),'%S'),textvariable=self.backVar)
         self.backBox.insert(0,self.project.getCurrentLevel().bkgIndex)
         self.backBox.grid(row=3,column=1,columnspan=2,sticky="ew")
 
@@ -379,9 +400,9 @@ class levelInfo(Tk):
         self.backBox.insert(0,str(self.project.getCurrentLevel().bkgIndex))
     def setLevelInfo(self,*args):
         """internal event"""
-        self.project.getCurrentLevel().zone = self.nameBox.get()
-        self.project.getCurrentLevel().musicPath = self.musicBox.get()
-        self.project.getCurrentLevel().bkgIndex = int(self.backBox.get())
+        self.project.getCurrentLevel().zone = self.nameString.get()
+        self.project.getCurrentLevel().musicPath = self.musicVar.get()
+        self.project.getCurrentLevel().bkgIndex = int(self.backVar.get())
 
 class levelInfoOpener:
     """
