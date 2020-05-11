@@ -1,0 +1,9 @@
+NAME: DemoZone | Zone | Act 1
+MUSIC: res/music/Dig2.ogg
+BKGINDEX: 0
+TILESET: tiles.mbtiles
+TILEMAP:
+1,1,1
+0,0,0
+
+ITEMS:

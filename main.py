@@ -156,7 +156,6 @@ def editor(window,mainRenderer,mainProject):
         ipal.open = temp
         cBar.toggleHighlight(5)
 
-
     # set up the control bar
     cBar = controlBar(mainRenderer,
             [
@@ -173,7 +172,7 @@ def editor(window,mainRenderer,mainProject):
                 exportLevel, 
                 lambda: mainProject.openWithDialog(mainRenderer),
                 saveProject,
-                lambda: print("LEVEL INFO"),
+                levelInfoOpener(mainProject),
                 toggleItemMode,
                 lpal.toggle
             ])

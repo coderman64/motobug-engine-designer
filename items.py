@@ -12,10 +12,11 @@ import os
 from fonttools import quickRenderText
 
 def isFloat(string):
+    """returns true if the given string can be converted to a float"""
     return all(c in "0123456789." for c in string)
 
 class itemlist:
-    """stores item definitions"""
+    """stores definitions for how items should be managed by Motobug Studio"""
     def __init__(self):
         self.items = []
     def loadItemList(self,xmlFileName):
@@ -26,6 +27,7 @@ class itemlist:
         self.items.clear()
 
 class item:
+    """represents one item in a Motobug level"""
     def __init__(self,itemType,x,y):
         self.itemType = itemType
         self.params = {}
@@ -43,6 +45,7 @@ class item:
             else:
                 self.params[i.find('name').text] = i.get('default') if i.get('default') else ""
     def draw(self,renderer,dx,dy):
+        """Draw the item as defined by its .mbitm configuration"""
         for i in self.itemType.find('display'):
             if i.tag == 'rect':
                 colors = i.find('color').text[1:-1].split(',')
@@ -53,6 +56,10 @@ class item:
                 rect.w, rect.h = self.getSize()
                 SDL_RenderFillRect(renderer,rect)
     def getPos(self):
+        """
+        Returns a list containing the x and y coordinates of the item. If not 
+        available, returns (-1,-1)
+        """
         pos = [None,None]
         try:
             for i in self.itemType.find('parameters'):
@@ -62,9 +69,13 @@ class item:
                 if paramType.startswith('position-y'):
                     pos[1] = round(float(self.params[i.find('name').text]))
         except:
-            pos = [16,16]
+            pos = [-1,-1]
         return pos
     def getSize(self):
+        """
+        Returns a list containing the x and y coordinates of the item. If not 
+        available, returns (16,16)
+        """
         size = [None,None]
         try:
             for i in self.itemType.find('parameters'):
@@ -77,14 +88,20 @@ class item:
             pos = [16,16]
         return size
     def setParam(self,param,value):
+        """set a particular parameter (param) to a particular value (value)"""
         if param in self.params.keys():
             self.params[param] = value
     def getParam(self,param):
+        """Returns the value of parameter param, or None, if it can't be found"""
         if param in self.params.keys():
             return self.params[param]
         else:
             return None
     def getString(self):
+        """
+        returns the string form of the function, as defined by "format" in
+        the .mbitm file
+        """
         string = self.itemType.find('format').text.strip()
         paramString = string[string.find('('):]
         string = string[:string.find('(')]
@@ -92,9 +109,14 @@ class item:
             paramString = paramString.replace(i,str(self.params[i]) if isFloat(str(self.params[i])) else '"'+str(self.params[i]).replace('"','\\"')+'"',1)
         return string+paramString
     def setDestroy(self):
+        """set the item to be destroyed by its parent level"""
         self.destroy = True
 
 class pathOpener:
+    """
+    a callback object to handle the "Browse..." button for items with path
+    variables
+    """
     def __init__(self,root,entryBox,initialdir):
         self.entrybox = entryBox
         self.initialdir = initialdir
@@ -112,6 +134,7 @@ class pathOpener:
         self.root.enableDestruction()
 
 class itemUI(Tk):
+    """A GUI box to edit an item's parameters"""
     def __init__(self,item,initialdir):
         itemType = item.itemType
         self.initialdir = initialdir
@@ -170,9 +193,11 @@ class itemUI(Tk):
         self.changed = False
         self.mainloop()
     def lostFocus(self,e=None):
+        """internal callback"""
         if not self.focus_get() in self.winfo_children() and self.focus_get() != self and self.destructable:
             self.exitUI()
     def exitUI(self,e=None):
+        """internal callback"""
         for i in self.edits.keys():
             if self.edits[i].get():
                 if self.item.getParam(i) != str(self.edits[i].get()):
@@ -180,22 +205,29 @@ class itemUI(Tk):
                     self.changed = True
         self.destroy()
     def setDestroy(self,e=None):
+        """set this ItemUI's associated item to be destroyed"""
         self.item.setDestroy()
         self.destroy()
     def disableDestruction(self):
+        """stop the window from destroying itself when not in focus"""
         self.destructable = False
     def enableDestruction(self):
+        """enable the window destroying itself when not in focus"""
         self.destructable = True
     def hadChanged(self):
-        """returns true if the UI changed any values in the item"""
+        """returns true if the UI has changed any values in the item"""
         return self.changed
 
 class itemPallet:
+    """
+    A GUI element that allows a user to select between adding different items
+    or editing only
+    """
     def __init__(self,rend,il):
         """
-        create a tile pallet object
+        create an item pallet object
         rend: SDL_Renderer responsible for drawing the pallet
-        il: itemList
+        il: itemList containing relevant item definitions
         """
         self.itemList = il
         self.open = False
@@ -206,7 +238,7 @@ class itemPallet:
         self.selected = -1
         self.level = None
     def draw(self):
-
+        """draw the item pallet"""
         if self.open:
             self.xpos += (200-self.xpos) * 0.1
         else:
@@ -257,15 +289,23 @@ class itemPallet:
                     quickRenderText(self.rend,self.ft_Mono16,"Edit Only",rect.x,rect.y+128)
     
     def interact(self,mouseY):
+        """
+        Call this function if the mouse clicks the pallet at y-position mouseY
+        """
         index = floor((mouseY+self.scroll-50)/150)-1
         if index >= -1 and index < len(self.itemList.items):
             self.selected = index
         #i*150+50-self.scroll
         
     def toggle(self):
+        """Toggle if the pallet is open or not"""
         self.open = not self.open
 
     def scrollY(self,yrel):
+        """
+        scroll vertically by yrel pixels, 
+        clamping at the ends of the scrolling area.
+        """
         # get the display size
         dispw, disph = c_int(), c_int()
         SDL_GetRendererOutputSize(self.rend,dispw,disph)
@@ -279,8 +319,11 @@ class itemPallet:
         if self.scroll+disph.value >= (len(self.itemList.items)+1)*150+178:
             self.scroll = (len(self.itemList.items)+1)*150+178-disph.value
             
-    
     def getSelectedItem(self):
+        """
+        returns the index of the item that is selected, or -1 if it is 
+        edit-only mode
+        """
         return self.selected
         
 

@@ -10,6 +10,7 @@ from level import *
 from items import *
 
 class project:
+    """Object type that represents an open project"""
     def __init__(self):
         self.tilesets = []
         self.levels = []
@@ -20,6 +21,10 @@ class project:
 
         self.projPath = ""
     def loadProject(self,renderer,filename):
+        """
+        load the project from the given filename. Renderer should be an
+        SDL_Renderer instance, and is used to import textures
+        """
         # keep backups in case the import goes wrong
         self.backupTilesets = self.tilesets.copy()
         self.backupLevels = self.levels.copy()
@@ -59,6 +64,11 @@ class project:
             currentLevel.project = self
             currentLevel.lvFilePath = os.path.join(levelDir,i,"level1.mblvl")
             currentLevel.parseFromString(levelMap)
+            currentLevel.zone = file[file.find("NAME:")+5:file.find("\n",file.find("NAME:"))].strip()
+            bkgIndex = file[file.find("BKGINDEX:")+9:file.find("\n",file.find("BKGINDEX:"))].strip()
+            currentLevel.bkgIndex = int(bkgIndex) if bkgIndex.isdecimal() else 0
+            currentLevel.musicPath = file[file.find("MUSIC:")+6:file.find("\n",file.find("MUSIC:"))].strip()
+            
 
             # parse the item list
             itemList = file[file.find('\n',file.rfind("ITEMS")):]
@@ -77,6 +87,7 @@ class project:
         self.backupTilesets.clear()
         self.backupLevels.clear()
     def openWithDialog(self,renderer):
+        """Load the project with a path from a Tk file dialog"""
         # create a root Tk window, and hide it (this is required for use of the tk file dialog)
         root = Tk()
         root.withdraw()
@@ -99,12 +110,17 @@ class project:
             root.destroy()
             return 1
     def save(self):
+        """saves the current level to disk."""
         # if no project is open, don't save it (there is nothing to save)
         if self.projPath == "":
             return
         
+        levelFile = "NAME: " + self.levels[0].zone +"\n"
+        levelFile += "MUSIC: " + self.levels[0].musicPath +"\n"
+        levelFile += "BKGINDEX: " + str(self.levels[0].bkgIndex) +"\n"
+
         # write tileset information
-        levelFile = "TILESET: "
+        levelFile += "TILESET: "
         levelFile += os.path.relpath(self.levels[0].tileSet.path,os.path.dirname(self.levels[0].lvFilePath))+"\n"
 
         # write tilemap information
@@ -121,5 +137,10 @@ class project:
         # reset level state to "unchanged"
         self.levels[0].setUnchanged()
     def getCurrentLevel(self):
+        """ returns the currently selected level in the project"""
         return self.levels[self.currentLevel]
+    def setCurrentLevel(self,index):
+        """set the current level to the one at index index"""
+        if index >= 0 and index < len(self.levels):
+            self.currentLevel = index
             
