@@ -12,7 +12,7 @@ from projects import *
 from items import *
 
 def main():
-    global lastMessage
+    global lastMessage, motobugTex
     SDL_Init(SDL_INIT_VIDEO)
     TTF_Init()
     window = SDL_CreateWindow(b"Motobug Studio (beta 0.4)",
@@ -27,11 +27,13 @@ def main():
     SDL_SetWindowIcon(window,icon)
 
     mainRenderer = SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED)
+    motobugTex = SDL_CreateTextureFromSurface(mainRenderer,icon)
 
     SDL_SetRenderDrawBlendMode(mainRenderer,SDL_BLENDMODE_BLEND)
     openLoop(window,mainRenderer)
 
 def openLoop(window,mainRenderer):
+    global motobugTex
     SDL_RestoreWindow(window)
     SDL_SetWindowResizable(window,SDL_FALSE)
     SDL_SetWindowSize(window,640,480)
@@ -102,10 +104,14 @@ def openLoop(window,mainRenderer):
             uiRect.x, uiRect.y, uiRect.w, uiRect.h = 0,floor((mousey-200)/30)*30+200,640,20
             SDL_RenderFillRect(mainRenderer,uiRect)
 
-        renderTextCenter(mainRenderer,ft_Mono24,"Welcome to Motobug Studio (beta 0.2)!",320,20,texts[0])
+        renderTextCenter(mainRenderer,ft_Mono24,"Welcome to Motobug Studio (beta 0.2)!",320,150,texts[0])
         renderTextCenter(mainRenderer,ft_Mono18,"New Project",320,210,texts[1])
         renderTextCenter(mainRenderer,ft_Mono18,"Load Project",320,240,texts[2])
         renderTextCenter(mainRenderer,ft_Mono18,"Quit",320,270,texts[3])
+
+        rt = SDL_Rect()
+        rt.x,rt.y,rt.w,rt.h = 320-64,0,128,128
+        SDL_RenderCopy(mainRenderer,motobugTex,None,rt)
 
         # draw the renderer to screen, and clear the buffer for the next frame
         SDL_RenderPresent(mainRenderer)
