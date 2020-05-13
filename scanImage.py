@@ -13,6 +13,8 @@ from PIL import Image
 import math
 
 def simpleScan(imgName):
+    return partScan(imgName,"nesw")
+    """
     ############################ TOP ################################
     img1 = Image.open(imgName).convert("RGBA")
     #initalize array
@@ -147,6 +149,7 @@ def simpleScan(imgName):
     #print(str(tileData4).replace("None","0").replace("'null'","null"))
 
     return "new chunk(newImage(\""+imgName+"\"),"+str(tileData).replace("None","0").replace("'null'","null")+","+str(tileData2).replace("None","0").replace("'null'","null")+","+str(tileData3).replace("None","0").replace("'null'","null")+","+str(tileData4).replace("None","0").replace("'null'","null")+"),"
+    """
 def noScan(imgName):
     tileData = [[None,None,None,None,None,None,None,None],[None,None,None,None,None,None,None,None],[None,None,None,None,None,None,None,None],[None,None,None,None,None,None,None,None],[None,None,None,None,None,None,None,None],[None,None,None,None,None,None,None,None],[None,None,None,None,None,None,None,None],[None,None,None,None,None,None,None,None]]
     tileData2 = [[None,None,None,None,None,None,None,None],[None,None,None,None,None,None,None,None],[None,None,None,None,None,None,None,None],[None,None,None,None,None,None,None,None],[None,None,None,None,None,None,None,None],[None,None,None,None,None,None,None,None],[None,None,None,None,None,None,None,None],[None,None,None,None,None,None,None,None]]
@@ -185,7 +188,7 @@ def partScan(imgName,strings):
                         tileData[y][x][16] = 0
                     if abs(values[0][1]-values[1][1]) <= 2 and lAngle != None:
                         tileData[y][x][16] = lAngle
-                    elif abs(values[0][1]-values[1][1]) <= 2:
+                    elif abs(values[0][1]-values[1][1]) < 2:
                         if values[0][1] < 8:
                             tileData[y][x][16] = 90
                         else:

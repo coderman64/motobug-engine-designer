@@ -136,6 +136,80 @@
         </display>
         <format>ring(x,y,w,h,src)</format>
     </item>
+    <item>
+        <name>Hidden Spring</name>
+        <parameters>
+            <pmr default="0">
+                <name>x</name>
+                <type>position-x</type>
+            </pmr>
+            <pmr default="0">
+                <name>y</name>
+                <type>position-y</type>
+            </pmr>
+            <pmr default="32">
+                <name>w</name>
+                <type>size-w</type>
+            </pmr>
+            <pmr default="16">
+                <name>h</name>
+                <type>size-h</type>
+            </pmr>
+            <pmr default="res/items/springY.png">
+                <name>src</name>
+                <type>string-path</type>
+            </pmr>
+            <pmr default="12">
+                <name>power</name>
+                <type>float</type>
+            </pmr>
+            <pmr default="0">
+                <name>angle</name>
+                <type>float-angle</type>
+            </pmr>
+        </parameters>
+        <display>
+            <rect>
+                <color>(255,255,0)</color>
+            </rect>
+        </display>
+        <format>hiddenSpring(x,y,w,h,src,power,angle)</format>
+    </item>
+    <item>
+        <name>Spikes</name>
+        <parameters>
+            <pmr default="0">
+                <name>x</name>
+                <type>position-x</type>
+            </pmr>
+            <pmr default="0">
+                <name>y</name>
+                <type>position-y</type>
+            </pmr>
+            <pmr default="32">
+                <name>w</name>
+                <type>size-w</type>
+            </pmr>
+            <pmr default="32">
+                <name>h</name>
+                <type>size-h</type>
+            </pmr>
+            <pmr default="res/items/spikes.png">
+                <name>src</name>
+                <type>string-path</type>
+            </pmr>
+            <pmr default="0">
+                <name>angle</name>
+                <type>float-angle</type>
+            </pmr>
+        </parameters>
+        <display>
+            <rect>
+                <color>(150,150,150)</color>
+            </rect>
+        </display>
+        <format>spikes(x,y,w,h,src,angle)</format>
+    </item>
 </itemset>
 
 <!-- 

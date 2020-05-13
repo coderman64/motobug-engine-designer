@@ -9,3 +9,7 @@ level.js
 
 # motobug engine project
 motobug-engine
+
+# temporary scanfile
+toScan.txt
+*/toScan.txt

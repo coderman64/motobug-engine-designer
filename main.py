@@ -55,8 +55,8 @@ def openLoop(window,mainRenderer):
     ]
 
     mainProject = project()
-    tiles = tileSet(mainRenderer)
-    tiles.loadTexFromFile("projects/CrystalGeyser/tiles.txt")
+    tiles = tileSet(mainRenderer,mainProject)
+    #tiles.loadTexFromFile("projects/CrystalGeyser/tiles.txt")
     mainProject.levels = [level(mainRenderer,tiles)]
     mainProject.tilesets = [tiles]
 
@@ -223,6 +223,9 @@ def editor(window,mainRenderer,mainProject):
         if lastMessage != oldMessage:
             toolTipAlpha = 400
             oldMessage = lastMessage
+
+        if tpal.tileSet != mainProject.getCurrentLevel().tileSet:
+            tpal.setTileset(mainProject.getCurrentLevel().tileSet)
 
         event = SDL_Event()
         while(SDL_PollEvent(ctypes.byref(event))):

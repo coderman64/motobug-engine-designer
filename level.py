@@ -214,7 +214,7 @@ class level:
 
         # reset level state to "unchanged"
         self.setUnchanged()
-    def export(self,name):
+    def export(self,name,tilesetPath):
         """
         export the level to the file at "name" in a Motobug-engine-compatible 
         .js format
@@ -233,7 +233,7 @@ class level:
                     final = final[:-1]+"],"
 
             final = final[:-1]+"],"
-        final += "];backgroundMusic.src = \""+ self.musicPath+"\";backgroundMusic.play();cBack = "+str(self.bkgIndex)+";chunks = [];thisScript = document.createElement(\"script\");thisScript.src = \"levels/CGTiles.js\";document.body.appendChild(thisScript);"
+        final += "];backgroundMusic.src = \""+ self.musicPath+"\";backgroundMusic.play();cBack = "+str(self.bkgIndex)+";chunks = [];thisScript = document.createElement(\"script\");thisScript.src = \""+tilesetPath+"\";document.body.appendChild(thisScript);"
         final += """levelName = ["%s","%s","%s"]""" % tuple([i.strip() for i in self.zone.split('|')]+["" for i in range(3-len(self.zone.split('|')))])
         fFile = open(name,'w')
         fFile.write(final)

@@ -4,13 +4,15 @@ from sdl2.sdlttf import *
 from ctypes import c_int
 from fonttools import quickRenderText
 from math import floor
+import os
 
 class tileSet:
-    def __init__(self,renderer):
+    def __init__(self,renderer,project):
         self.texArray = []
         self.nameArray = []
         self.texCount = 0
         self.rend = renderer
+        self.project = project
         self.path = ""
     def loadTex(self,texPath):
         image = IMG_Load(texPath)
@@ -36,7 +38,7 @@ class tileSet:
                 tileLoc = i[i.find("||")+2:]
             else:
                 tileLoc = i[i.find(">")+1:]
-            self.loadTex(bytes(tileLoc,"ASCII"))
+            self.loadTex(bytes(os.path.join(self.project.projPath,tileLoc),"ASCII"))
 
 class tilePallet:
     def __init__(self,rend,ts):
@@ -52,6 +54,8 @@ class tilePallet:
         self.rend = rend
         self.ft_Mono16 = TTF_OpenFont(b"fonts/RobotoMono-Regular.ttf",16)
         self.selected = 0
+    def setTileset(self,ts):
+        self.tileSet = ts
     def draw(self):
 
         if self.open:

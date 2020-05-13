@@ -10,6 +10,7 @@ from sdl2 import *
 from tileset import *
 from level import *
 from items import *
+from scanImage import startScan
 
 class exportPathOpener:
     """Callback object to open a directory using a file dialog"""
@@ -55,6 +56,7 @@ class project:
         # keep backups in case the import goes wrong
         self.backupTilesets = self.tilesets.copy()
         self.backupLevels = self.levels.copy()
+        self.backupProjPath = self.projPath
 
         # clear out project
         self.tilesets.clear()
@@ -71,15 +73,15 @@ class project:
                 self.exportPath = i[11:].strip()
 
         # get the path for the pkg directory
-        filepath = os.path.dirname(os.path.abspath(filename))
-        itemDir = os.path.join(filepath,'pkg')
+        self.projPath = os.path.dirname(os.path.abspath(filename))
+        itemDir = os.path.join(self.projPath,'pkg')
 
         #import all itemLists
         for i in os.listdir(itemDir):
             self.itemList.loadItemList(os.path.join(itemDir,i))
 
         # get the path for the levels directory
-        levelDir = os.path.join(filepath,'levels')
+        levelDir = os.path.join(self.projPath,'levels')
 
         # import all levels and tilesets
         for i in os.listdir(levelDir):
@@ -88,7 +90,7 @@ class project:
             tileSetName = os.path.join(levelDir,i,tileSetName)
             tileSetIndex = -1
             if not tileSetName in [ts.path for ts in self.tilesets]:
-                thisTileset = tileSet(renderer)
+                thisTileset = tileSet(renderer,self)
                 thisTileset.loadTexFromFile(tileSetName)
                 tileSetIndex = len(self.tilesets)
                 self.tilesets.append(thisTileset)
@@ -117,7 +119,6 @@ class project:
 
             self.levels.append(currentLevel)
         
-        self.projPath = filepath
         self.projFile = filename
 
         # upon successful completion, clear the backups (to save on memory)
@@ -143,6 +144,7 @@ class project:
             tkMessagebox.showerror("Error opening project","""Could not open the project file specified: %s\nEnsure that your project has the correct directory structure and formatting.\n\nERROR: \n%s""" % (result,str(e)))
             self.levels = self.backupLevels
             self.tilesets = self.backupTilesets
+            self.projPath = self.backupProjPath
             # destroy the invisible root window
             root.destroy()
             return 1
@@ -194,7 +196,7 @@ class project:
         levelIndex = 0
         for i in self.levels:
             levelList.append("level_"+str(levelIndex))
-            i.export(os.path.join(levelExportPath,"level_"+str(levelIndex)+".js"))
+            i.export(os.path.join(levelExportPath,"level_"+str(levelIndex)+".js"),"levels/tileset"+str(self.tilesets.index(i.tileSet))+".js" )
             levelIndex += 1
         levelEngineFile = open(os.path.join(self.exportPath,"engine/level.js")).read()
         finalLevelEngineFile = ""
@@ -204,6 +206,16 @@ class project:
             else:
                 finalLevelEngineFile += i+"\n"
         open(os.path.join(self.exportPath,"engine/level.js"),'w').write(finalLevelEngineFile)
+
+        tileScanText = ""
+        for i in range(len(self.tilesets)):
+            tileScanText += open(self.tilesets[i].path).read()
+            tileScanText += "\n%"+os.path.join(self.exportPath,"levels","tileset"+str(i)+".js")+"\n"
+        temp = os.getcwd()
+        os.chdir(self.projPath)
+        open("toScan.txt","w").write(tileScanText)
+        startScan()
+        os.chdir(temp)
         
         copytree(os.path.join(self.projPath,"res"),os.path.join(self.exportPath,"res"),dirs_exist_ok=True)
         self.save()
