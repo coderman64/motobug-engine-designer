@@ -2,7 +2,7 @@ import os
 from tkinter import filedialog
 from tkinter import *
 from tkinter import messagebox as tkMessagebox
-from shutil import copytree
+from copy_tree_overwrite import copytree
 from webbrowser import open as web_open
 
 from sdl2 import *
@@ -127,12 +127,15 @@ class project:
     def openWithDialog(self,renderer):
         """Load the project with a path from a Tk file dialog"""
         # create a root Tk window, and hide it (this is required for use of the tk file dialog)
+        print("RUNNING")
         root = Tk()
         root.withdraw()
 
+        print("OPENING DIALOG")
         # use tk to ask for the file from the dialog (will pause program)
         result = filedialog.askopenfilename(initialdir = "./projects", title = "Motobug Studio - Open Project",filetypes = (("Motobug Studio Project","*.mbproj"),("all files","*.*")))
 
+        print("LOADING PROJECT")
         # load the project from the given filename
         try:
             self.loadProject(renderer,result)
@@ -217,7 +220,7 @@ class project:
         startScan()
         os.chdir(temp)
         
-        copytree(os.path.join(self.projPath,"res"),os.path.join(self.exportPath,"res"),dirs_exist_ok=True)
+        copytree(os.path.join(self.projPath,"res"),os.path.join(self.exportPath,"res"))
         self.save()
 
         return True
