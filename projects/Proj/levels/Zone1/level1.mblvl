@@ -1,0 +1,8 @@
+NAME: Default | Zone | Act 1
+MUSIC:
+BKGINDEX:0
+TILESET:tiles.mbtiles
+TILEMAP:
+-1,-1,-1
+1,1,1
+ITEMS:

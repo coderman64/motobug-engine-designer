@@ -48,6 +48,71 @@ class project:
         self.projPath = ""
         self.projFile = ""
         self.exportPath = ""
+    def newProject(self,renderer,filename):
+        """create a new project at path filename"""
+        dirname = filename
+        if "." in os.path.basename(filename):
+            dirname = filename[:filename.rfind(".")]
+
+        os.makedirs(os.path.join(dirname,"levels"))
+        os.makedirs(os.path.join(dirname,"levels","Zone1"))
+        os.makedirs(os.path.join(dirname,"pkg"))
+        os.makedirs(os.path.join(dirname,"res"))
+
+        defaultProject = "CURRENTLEVEL: 0\nEXPORTPATH: "
+        defaultFile = open(os.path.join(dirname,"project.mbproj"),"w")
+        defaultFile.write(defaultProject)
+        defaultFile.close()
+
+        defaultLevel = "NAME: Default | Zone | Act 1\nMUSIC:\nBKGINDEX:0\nTILESET:tiles.mbtiles"
+        defaultLevel += "\nTILEMAP:\n-1,-1,-1\n1,1,1"
+        defaultLevel += "\nITEMS:"
+        defaultFile = open(os.path.join(dirname,"levels/Zone1/level1.mblvl"),"w")
+        defaultFile.write(defaultLevel)
+        defaultFile.close()
+
+        defaultSourceFile = open("res/defaultTileset/tiles.mbtiles")
+        defaultFile = open(os.path.join(dirname,"levels","Zone1","tiles.mbtiles"),"w")
+        defaultFile.write(defaultSourceFile.read())
+        defaultSourceFile.close()
+        defaultFile.close()
+
+        copytree("res/defaultTileset",os.path.join(dirname,"res","Level","defaultTileset"))
+        os.remove(os.path.join(dirname,"res","Level","defaultTileset","tiles.mbtiles"))
+        
+        self.loadProject(renderer,os.path.join(dirname,"project.mbproj"))
+
+    def newWithDialog(self,renderer):
+        """Create a new project with a path from a Tk file dialog"""
+        # create a root Tk window, and hide it (this is required for use of the tk file dialog)
+        root = Tk()
+        root.withdraw()
+
+        # use tk to ask for the file from the dialog (will pause program)
+        result = filedialog.asksaveasfilename(initialdir = "./projects", title = "Motobug Studio - New Project",filetypes = (("directory","*/"),("all files","*.*")))
+
+        if result == "":
+            tkMessagebox.showerror("Error creating project","""Cannot create project with empty path (file dialog cancelled).""")
+            return 1
+
+        self.backupLevels = self.levels
+        self.backupTilesets = self.tilesets
+        self.backupProjPath = self.projPath
+        # create the project from the given filename
+        try:
+            self.newProject(renderer,result)
+            # destroy the invisible root window
+            root.destroy()
+            return 0
+
+        except Exception as e:
+            tkMessagebox.showerror("Error creating project","""Could not create the specified project: %s\nCheck the project path.\n\nERROR: \n%s""" % (result,str(e)))
+            self.levels = self.backupLevels
+            self.tilesets = self.backupTilesets
+            self.projPath = self.backupProjPath
+            # destroy the invisible root window
+            root.destroy()
+            return 1
     def loadProject(self,renderer,filename):
         """
         load the project from the given filename. Renderer should be an
@@ -83,12 +148,15 @@ class project:
         # get the path for the levels directory
         levelDir = os.path.join(self.projPath,'levels')
 
+
         # import all levels and tilesets
         for i in os.listdir(levelDir):
             file = open(os.path.join(levelDir,i,"level1.mblvl")).read()
-            tileSetName = file[file.find("TILESET: ")+9:file.find("\n",file.find("TILESET: "))]
+            
+            tileSetName = file[file.find("TILESET:")+8:file.find("\n",file.find("TILESET:"))].strip()
             tileSetName = os.path.join(levelDir,i,tileSetName)
             tileSetIndex = -1
+            
             if not tileSetName in [ts.path for ts in self.tilesets]:
                 thisTileset = tileSet(renderer,self)
                 thisTileset.loadTexFromFile(tileSetName)
@@ -96,7 +164,7 @@ class project:
                 self.tilesets.append(thisTileset)
             else:
                 tileSetIndex = [ts.path for ts in self.tilesets].index(tileSetName)
-
+            
             # parse the level map
             levelMap = file[file.find("TILEMAP:")+8:file.rfind("ITEMS:")]
             currentLevel = level(renderer,self.tilesets[tileSetIndex])
@@ -108,7 +176,6 @@ class project:
             currentLevel.bkgIndex = int(bkgIndex) if bkgIndex.isdecimal() else 0
             currentLevel.musicPath = file[file.find("MUSIC:")+6:file.find("\n",file.find("MUSIC:"))].strip()
             
-
             # parse the item list
             itemList = file[file.find('\n',file.rfind("ITEMS")):]
             currentLevel.items.clear()
@@ -118,7 +185,7 @@ class project:
             currentLevel.setUnchanged()
 
             self.levels.append(currentLevel)
-        
+
         self.projFile = filename
 
         # upon successful completion, clear the backups (to save on memory)
@@ -127,15 +194,16 @@ class project:
     def openWithDialog(self,renderer):
         """Load the project with a path from a Tk file dialog"""
         # create a root Tk window, and hide it (this is required for use of the tk file dialog)
-        print("RUNNING")
         root = Tk()
         root.withdraw()
 
-        print("OPENING DIALOG")
         # use tk to ask for the file from the dialog (will pause program)
         result = filedialog.askopenfilename(initialdir = "./projects", title = "Motobug Studio - Open Project",filetypes = (("Motobug Studio Project","*.mbproj"),("all files","*.*")))
 
-        print("LOADING PROJECT")
+        if result == "":
+            tkMessagebox.showerror("Error opening project","""Cannot load project from empty path (file dialog cancelled).""")
+            return 1
+
         # load the project from the given filename
         try:
             self.loadProject(renderer,result)

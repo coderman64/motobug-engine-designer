@@ -76,10 +76,13 @@ def openLoop(window,mainRenderer):
                 if mousey > 200 and mousey < 280 and (mousey-200)%30 < 20:
                     index = floor((mousey-200)/30)
                     if index == 0:
-                        pass
+                        success = mainProject.newWithDialog(mainRenderer)
+                        if success == 0:
+                            inOpenLoop = False
                     elif index == 1:
-                        mainProject.openWithDialog(mainRenderer)
-                        inOpenLoop = False
+                        success = mainProject.openWithDialog(mainRenderer)
+                        if success == 0:
+                            inOpenLoop = False
                     elif index == 2:
                         SDL_DestroyWindow(window)
                         SDL_Quit()

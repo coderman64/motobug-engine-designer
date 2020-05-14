@@ -1,0 +1,12 @@
+s>res/Level/CrystalGeyser/tile.png
+s>res/Level/CrystalGeyser/tile_top.png
+#se>res/Level/CrystalGeyser/tile_curveNW.png
+#sw>res/Level/CrystalGeyser/tile_curveNE.png
+#ne>res/Level/CrystalGeyser/tile_curveSW.png
+#nw>res/Level/CrystalGeyser/tile_curveSE.png
+s>res/Level/CrystalGeyser/tile_underCurveSW.png
+s>res/Level/CrystalGeyser/tile_underCurveSE.png
+s>res/Level/CrystalGeyser/tile_ocurveNW.png
+s>res/Level/CrystalGeyser/tile_ocurveNE.png
+s>res/Level/CrystalGeyser/tile_ocurveSW.png
+s>res/Level/CrystalGeyser/tile_ocurveSE.png
