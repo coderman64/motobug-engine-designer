@@ -1,1 +1,1 @@
-py ./main.py
+py %~dp0/main.py %1

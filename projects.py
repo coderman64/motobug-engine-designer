@@ -191,14 +191,15 @@ class project:
         # upon successful completion, clear the backups (to save on memory)
         self.backupTilesets.clear()
         self.backupLevels.clear()
-    def openWithDialog(self,renderer):
+    def openWithDialog(self,renderer,result=None):
         """Load the project with a path from a Tk file dialog"""
         # create a root Tk window, and hide it (this is required for use of the tk file dialog)
         root = Tk()
         root.withdraw()
 
-        # use tk to ask for the file from the dialog (will pause program)
-        result = filedialog.askopenfilename(initialdir = "./projects", title = "Motobug Studio - Open Project",filetypes = (("Motobug Studio Project","*.mbproj"),("all files","*.*")))
+        if result == None:
+            # use tk to ask for the file from the dialog (will pause program)
+            result = filedialog.askopenfilename(initialdir = "./projects", title = "Motobug Studio - Open Project",filetypes = (("Motobug Studio Project","*.mbproj"),("all files","*.*")))
 
         if result == "":
             tkMessagebox.showerror("Error opening project","""Cannot load project from empty path (file dialog cancelled).""")

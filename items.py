@@ -8,6 +8,7 @@ from sdl2.sdlttf import *
 from ctypes import c_int
 from math import floor
 import os
+from parseMath import parseMath
 
 from fonttools import quickRenderText
 
@@ -166,6 +167,7 @@ class itemUI(Tk):
         self.geometry("+%s+%s" % (str(abs_coord_x-5),str(abs_coord_y-5)))
 
         self.edits = {}
+        self.paramTypes = {}
 
         label = Label(self,text=itemType.find('name').text)
         label.pack()
@@ -174,13 +176,14 @@ class itemUI(Tk):
             label.pack()
             paramType = i.find('type').text.strip()
             paramName = i.find('name').text
+            self.paramTypes[paramName] = paramType
             if paramType.startswith('float') or paramType.startswith('position') or paramType.startswith('size'):
-                box = Entry(self,validate='key',validatecommand=(self.register(lambda e: isFloat(e) ),'%S'))
+                box = Entry(self,validate='key',validatecommand=(self.register(lambda e: all(c in "0123456789.+-*/" for c in e) ),'%S'))
                 box.insert(0,str(item.params[paramName]))
                 box.pack()
                 self.edits[paramName] = box
             elif paramType.startswith('int'):
-                box = Entry(self,validate='key',validatecommand=(self.register(lambda e: e.isdigit() ),'%S'))
+                box = Entry(self,validate='key',validatecommand=(self.register(lambda e: all(c in "0123456789+-*" for c in e) ),'%S'))
                 box.insert(0,str(item.params[paramName]))
                 box.pack()
                 self.edits[paramName] = box
@@ -214,7 +217,15 @@ class itemUI(Tk):
         for i in self.edits.keys():
             if self.edits[i].get():
                 if self.item.getParam(i) != str(self.edits[i].get()):
-                    self.item.setParam(i,str(self.edits[i].get()))
+                    result = str(self.edits[i].get())
+                    if self.paramTypes[i].startswith("position") or self.paramTypes[i].startswith("size") or self.paramTypes[i].startswith("float") or self.paramTypes[i].startswith("int"):
+                        if not isFloat(result):
+                            print(result)
+                            try:
+                                result = parseMath(result)
+                            except:
+                                print("failed to evaluate string %s" % result)
+                    self.item.setParam(i,result)
                     self.changed = True
         self.destroy()
     def setDestroy(self,e=None):

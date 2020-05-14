@@ -10,9 +10,10 @@ from fonttools import *
 from UI import *
 from projects import *
 from items import *
+from sys import argv
 
 def main():
-    global lastMessage, motobugTex
+    global lastMessage, motobugTex,triedArgs
     SDL_Init(SDL_INIT_VIDEO)
     TTF_Init()
     window = SDL_CreateWindow(b"Motobug Studio (beta 0.4)",
@@ -21,6 +22,8 @@ def main():
     if not window:
         print("WINDOW COULD NOT BE CREATED!")
         exit(1)
+
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
     
     # set window icon
     icon = IMG_Load(b"icons/motobug.png")
@@ -30,10 +33,11 @@ def main():
     motobugTex = SDL_CreateTextureFromSurface(mainRenderer,icon)
 
     SDL_SetRenderDrawBlendMode(mainRenderer,SDL_BLENDMODE_BLEND)
+    triedArgs = False
     openLoop(window,mainRenderer)
 
 def openLoop(window,mainRenderer):
-    global motobugTex
+    global motobugTex, triedArgs
     SDL_RestoreWindow(window)
     SDL_SetWindowResizable(window,SDL_FALSE)
     SDL_SetWindowSize(window,640,480)
@@ -106,6 +110,12 @@ def openLoop(window,mainRenderer):
             uiRect = SDL_Rect()
             uiRect.x, uiRect.y, uiRect.w, uiRect.h = 0,floor((mousey-200)/30)*30+200,640,20
             SDL_RenderFillRect(mainRenderer,uiRect)
+
+        if len(argv) > 1 and argv[1].endswith(".mbproj") and not triedArgs:
+            success = mainProject.openWithDialog(mainRenderer,argv[1])
+            if success == 0:
+                inOpenLoop = False
+            triedArgs = True
 
         renderTextCenter(mainRenderer,ft_Mono24,"Welcome to Motobug Studio (beta 0.2)!",320,150,texts[0])
         renderTextCenter(mainRenderer,ft_Mono18,"New Project",320,210,texts[1])
@@ -364,6 +374,11 @@ def editor(window,mainRenderer,mainProject):
         if not mouseOut and not itemMode:
             hlRect.x, hlRect.y, hlRect.w, hlRect.h = round(floor((mousex/editorScale+camx)/128)*128-camx), round(floor((mousey/editorScale+camy)/128)*128-camy), 128,128
             SDL_RenderFillRect(mainRenderer,hlRect)
+        if itemMode and editorScale >=1:
+            for x in range(8):
+                for y in range(8):
+                    SDL_SetRenderDrawColor(mainRenderer, 255,255,255,max(round((4-abs(x-((mousex/editorScale+8)/16.)%1-3.5)-abs(y-((mousey/editorScale+8)/16.)%1-3.5))*255/4),0))
+                    SDL_RenderDrawPoint(mainRenderer,x*16+round((mousex/editorScale-80)/16)*16+16-round(camx)%16,y*16+round((mousey/editorScale-80)/16)*16+16-round(camy)%16)
 
         # reset scaling for the UI section
         SDL_RenderSetScale(mainRenderer,1,1)
