@@ -96,7 +96,7 @@ class level:
         else:
             if not type(self.lvMap[y][x]) is list:
                 self.lvMap[y][x] = [self.lvMap[y][x] for i in range(layer)]
-            while len(self.lvMap[y][x]) <= min(2,layer):
+            while len(self.lvMap[y][x]) <= max(1,layer):
                 self.lvMap[y][x].append(-1)
             self.lvMap[y][x][layer] = id
         self.unchanged = False

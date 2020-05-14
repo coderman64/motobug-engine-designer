@@ -195,6 +195,19 @@ def partScan(imgName,strings):
                             tileData[y][x][16] = -90
                     if tileData[y][x] != None:
                         lAngle = tileData[y][x][16]
+        # fix glitches for boxes with bad data
+        for x in range(0,8):
+            for y in range(0,7)[::-1]:
+                if tileData[y][x] and tileData[y][x][16] in [90,-90]:
+                    values = [[-16,-1],[-16,-1]]
+                    for i in range(0,16):
+                        if tileData[y][x][i] != -16:
+                            if values[0][0] == -16:
+                                values[0] = [tileData[y][x][i],i]#first
+                            values[1] = [tileData[y][x][i],i] #last
+                    if abs(values[0][1]-values[1][1]) < 2 and values[0][0] < 8 and values[1][0] < 8:
+                        tileData[y][x][16] = tileData[y+1][x][16]
+                    
         #print(str(tileData).replace("None","0").replace("'null'","null"))
 
     ##################################### LEFT #########################################

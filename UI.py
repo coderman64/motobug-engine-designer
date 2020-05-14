@@ -93,7 +93,7 @@ class layerPallet:
         self.rend = rend
         self.ft_Mono16 = TTF_OpenFont(b"fonts/RobotoMono-Regular.ttf",16)
         self.selected = -1
-        self.layercount = 3
+        self.layercount = 11
     def draw(self):
 
         if self.open:
