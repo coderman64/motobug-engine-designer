@@ -27,7 +27,7 @@ Current features:
 1. Install python 3.8.x
 2. Install pysdl2:
 ```
-py -m pip install pysdl2 pysdl2-dlls
+py -m pip install pysdl2 pysdl2-dll
 ```
 
 3. run main.py:
