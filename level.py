@@ -314,6 +314,10 @@ class level:
                         newItem = item(i,0,0)
                         pIndex = 0
                         for p in i.find('parameters'):
+                            if pIndex >= len(itemParams):
+                                break
+                            print(pIndex)
+                            print(itemParams[pIndex])
                             newItem.setParam(p.find('name').text,itemParams[pIndex][1:-1].replace('\\"','"') if itemParams[pIndex].startswith('"') else itemParams[pIndex])
                             pIndex += 1
                         self.items.append(newItem)
