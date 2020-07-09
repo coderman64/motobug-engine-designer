@@ -67,8 +67,10 @@ def openLoop(window,mainRenderer):
     mousex,mousey = 0,0
     windowdrag = False
     windowdragstart = [0,0]
+    currentTicks = SDL_GetTicks()
 
     while inOpenLoop:
+        currentTicks = SDL_GetTicks()
         event = SDL_Event()
         while(SDL_PollEvent(ctypes.byref(event))):
             if(event.type == SDL_QUIT or (event.type == SDL_KEYUP and event.key.keysym.sym == SDLK_ESCAPE)):
@@ -134,7 +136,7 @@ def openLoop(window,mainRenderer):
         SDL_RenderClear(mainRenderer)
 
         # wait 10ms before the next frame
-        SDL_Delay(10)
+        SDL_Delay(10-(SDL_GetTicks()-currentTicks))
 
     SDL_SetWindowResizable(window,SDL_TRUE)
     SDL_SetWindowSize(window,1280,720)
@@ -307,7 +309,12 @@ def editor(window,mainRenderer,mainProject):
             
             # interact with the tilePallet
             if event.type == SDL_MOUSEBUTTONDOWN and event.button.button == SDL_BUTTON_LEFT and mousex < tpal.xpos:
-                tpal.interact(mousey)
+                if mousex < tpal.xpos-32:
+                    tpal.interact(mousey)
+                else:
+                    tpal.scrollbar(mousey)
+            if event.type == SDL_MOUSEBUTTONUP and event.button.button == SDL_BUTTON_LEFT and tpal.scrolling:
+                tpal.stopScroll()
 
             # scroll the tilePallet
             if event.type == SDL_MOUSEWHEEL and mouseOut and mousex < tpal.xpos:
@@ -359,6 +366,10 @@ def editor(window,mainRenderer,mainProject):
                         mainProject.getCurrentLevel().camx = ((winWidth.value/2+camx*editorScale*1.25)*0.8-winWidth.value/2)/editorScale
                         mainProject.getCurrentLevel().camy = ((winHeight.value/2+camy*editorScale*1.25)*0.8-winHeight.value/2)/editorScale
                     lastMessage = "scale: "+str(round(editorScale*100))+"%"
+
+        if tpal.scrolling:
+            tpal.scrollbar(mousey)
+
 
         camx = mainProject.getCurrentLevel().camx
         camy = mainProject.getCurrentLevel().camy

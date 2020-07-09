@@ -1,2 +1,3 @@
-py %~dp0/main.py %1
+cd %~dp0
+py main.py %1
 pause

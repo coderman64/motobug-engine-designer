@@ -127,6 +127,7 @@ class project:
         self.tilesets.clear()
         self.levels.clear()
 
+
         # load basic project settings from the .mbproj file
         mbproj = open(filename).read().splitlines()
         for i in mbproj:
@@ -136,6 +137,7 @@ class project:
                 print("deci: %d" % self.currentLevel)
             if i.startswith("EXPORTPATH:"):
                 self.exportPath = i[11:].strip()
+
 
         # get the path for the pkg directory
         self.projPath = os.path.dirname(os.path.abspath(filename))
@@ -147,7 +149,6 @@ class project:
 
         # get the path for the levels directory
         levelDir = os.path.join(self.projPath,'levels')
-
 
         # import all levels and tilesets
         for i in os.listdir(levelDir):
@@ -175,7 +176,7 @@ class project:
             bkgIndex = file[file.find("BKGINDEX:")+9:file.find("\n",file.find("BKGINDEX:"))].strip()
             currentLevel.bkgIndex = int(bkgIndex) if bkgIndex.isdecimal() else 0
             currentLevel.musicPath = file[file.find("MUSIC:")+6:file.find("\n",file.find("MUSIC:"))].strip()
-            
+
             # parse the item list
             itemList = file[file.find('\n',file.rfind("ITEMS")):]
             currentLevel.items.clear()

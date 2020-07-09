@@ -20,12 +20,20 @@ class level:
         self.unchanged = True
         self.camx = 0
         self.camy = -32
+
+        self.view = SDL_Rect()
+        SDL_RenderGetViewport(self.rend,self.view)
+
+        self.renderTexture = SDL_CreateTexture(self.rend,SDL_PIXELFORMAT_RGBA8888,\
+            SDL_TEXTUREACCESS_TARGET,self.view.w,self.view.h)
     def draw(self,selLayer=-1):
         """
         draw the level to the renderer
         \tselLayer (optional): the layer which should be drawn as selected
         \t\t(-1 for all layers)
         """
+        # SDL_SetRenderTarget(self.rend,self.renderTexture)
+        # SDL_RenderClear(self.rend)
         dx,dy = -round(self.camx),-round(self.camy)
         rt = SDL_Rect()
         rt.x, rt.y, rt.w, rt.h = dx,dy,128,128
@@ -50,6 +58,8 @@ class level:
             if i.destroy:
                 self.items.remove(i)
                 self.unchanged = False
+        # SDL_SetRenderTarget(self.rend,None)
+        # SDL_RenderCopy(self.rend,self.renderTexture,self.view,None)
     def add(self,x,y,id,layer=-1,undo=True):
         """
         Add the tile with index "id" at the given position\n
@@ -314,6 +324,10 @@ class level:
                         newItem = item(i,0,0)
                         pIndex = 0
                         for p in i.find('parameters'):
+                            if pIndex >= len(itemParams):
+                                break
+                            print(pIndex)
+                            print(itemParams[pIndex])
                             newItem.setParam(p.find('name').text,itemParams[pIndex][1:-1].replace('\\"','"') if itemParams[pIndex].startswith('"') else itemParams[pIndex])
                             pIndex += 1
                         self.items.append(newItem)
