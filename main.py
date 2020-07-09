@@ -309,7 +309,12 @@ def editor(window,mainRenderer,mainProject):
             
             # interact with the tilePallet
             if event.type == SDL_MOUSEBUTTONDOWN and event.button.button == SDL_BUTTON_LEFT and mousex < tpal.xpos:
-                tpal.interact(mousey)
+                if mousex < tpal.xpos-32:
+                    tpal.interact(mousey)
+                else:
+                    tpal.scrollbar(mousey)
+            if event.type == SDL_MOUSEBUTTONUP and event.button.button == SDL_BUTTON_LEFT and tpal.scrolling:
+                tpal.stopScroll()
 
             # scroll the tilePallet
             if event.type == SDL_MOUSEWHEEL and mouseOut and mousex < tpal.xpos:
@@ -361,6 +366,10 @@ def editor(window,mainRenderer,mainProject):
                         mainProject.getCurrentLevel().camx = ((winWidth.value/2+camx*editorScale*1.25)*0.8-winWidth.value/2)/editorScale
                         mainProject.getCurrentLevel().camy = ((winHeight.value/2+camy*editorScale*1.25)*0.8-winHeight.value/2)/editorScale
                     lastMessage = "scale: "+str(round(editorScale*100))+"%"
+
+        if tpal.scrolling:
+            tpal.scrollbar(mousey)
+
 
         camx = mainProject.getCurrentLevel().camx
         camy = mainProject.getCurrentLevel().camy

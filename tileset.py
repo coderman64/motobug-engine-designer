@@ -54,6 +54,8 @@ class tilePallet:
         self.rend = rend
         self.ft_Mono16 = TTF_OpenFont(b"fonts/RobotoMono-Regular.ttf",16)
         self.selected = 0
+        self.scrolling = False
+
     def setTileset(self,ts):
         self.tileSet = ts
     def draw(self):
@@ -100,6 +102,24 @@ class tilePallet:
         if index >= 0 and index < self.tileSet.texCount:
             self.selected = index
         #i*150+50-self.scroll
+
+    def scrollbar(self,mouseY):
+        self.scrolling = True
+        dispw, disph = c_int(), c_int()
+        SDL_GetRendererOutputSize(self.rend,dispw,disph)
+        pixPerTex = (disph.value-50)/self.tileSet.texCount
+        self.selected = round((mouseY-50)/pixPerTex)
+        self.selected = max(min(self.selected,self.tileSet.texCount-1),0)
+
+        self.scroll = self.selected*150
+
+        if self.scroll <= 0:
+            self.scroll = 0
+        if self.scroll+disph.value >= self.tileSet.texCount*150+178:
+            self.scroll = self.tileSet.texCount*150+178-disph.value
+    
+    def stopScroll(self):
+        self.scrolling = False
         
     def toggle(self):
         self.open = not self.open
