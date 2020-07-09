@@ -13,3 +13,8 @@ motobug-engine
 # temporary scanfile
 toScan.txt
 */toScan.txt
+
+# PyInstaller files
+build/
+dist/
+*.spec
