@@ -21,11 +21,11 @@ class level:
         self.camx = 0
         self.camy = -32
 
-        self.view = SDL_Rect()
-        SDL_RenderGetViewport(self.rend,self.view)
+        # self.view = SDL_Rect()
+        # SDL_RenderGetViewport(self.rend,self.view)
 
-        self.renderTexture = SDL_CreateTexture(self.rend,SDL_PIXELFORMAT_RGBA8888,\
-            SDL_TEXTUREACCESS_TARGET,self.view.w,self.view.h)
+        # self.renderTexture = SDL_CreateTexture(self.rend,SDL_PIXELFORMAT_RGBA8888,\
+        #     SDL_TEXTUREACCESS_TARGET,self.view.w,self.view.h)
     def draw(self,selLayer=-1):
         """
         draw the level to the renderer
@@ -326,8 +326,8 @@ class level:
                         for p in i.find('parameters'):
                             if pIndex >= len(itemParams):
                                 break
-                            print(pIndex)
-                            print(itemParams[pIndex])
+                            #print(pIndex)
+                            #print(itemParams[pIndex])
                             newItem.setParam(p.find('name').text,itemParams[pIndex][1:-1].replace('\\"','"') if itemParams[pIndex].startswith('"') else itemParams[pIndex])
                             pIndex += 1
                         self.items.append(newItem)

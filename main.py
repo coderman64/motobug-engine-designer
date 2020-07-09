@@ -136,7 +136,7 @@ def openLoop(window,mainRenderer):
         SDL_RenderClear(mainRenderer)
 
         # wait 10ms before the next frame
-        SDL_Delay(10-(SDL_GetTicks()-currentTicks))
+        SDL_Delay(10-min(9,max(round(SDL_GetTicks()-currentTicks),0)))
 
     SDL_SetWindowResizable(window,SDL_TRUE)
     SDL_SetWindowSize(window,1280,720)
@@ -243,7 +243,10 @@ def editor(window,mainRenderer,mainProject):
             tpal.setTileset(mainProject.getCurrentLevel().tileSet)
 
         event = SDL_Event()
+
+        currentTicks = SDL_GetTicks()
         while(SDL_PollEvent(ctypes.byref(event))):
+            currentTicks = SDL_GetTicks()
             if(event.type == SDL_QUIT): # or (event.type == SDL_KEYUP and event.key.keysym.sym == SDLK_ESCAPE)):
                 if CloseAndSave(mainProject):
                     looping = False
@@ -417,7 +420,7 @@ def editor(window,mainRenderer,mainProject):
         SDL_RenderClear(mainRenderer)
 
         # wait 10ms before the next frame
-        SDL_Delay(10)
+        SDL_Delay(10-min(9,max(round(SDL_GetTicks()-currentTicks),0)))
     
     openLoop(window,mainRenderer)
 
