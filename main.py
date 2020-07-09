@@ -67,8 +67,10 @@ def openLoop(window,mainRenderer):
     mousex,mousey = 0,0
     windowdrag = False
     windowdragstart = [0,0]
+    currentTicks = SDL_GetTicks()
 
     while inOpenLoop:
+        currentTicks = SDL_GetTicks()
         event = SDL_Event()
         while(SDL_PollEvent(ctypes.byref(event))):
             if(event.type == SDL_QUIT or (event.type == SDL_KEYUP and event.key.keysym.sym == SDLK_ESCAPE)):
@@ -134,7 +136,7 @@ def openLoop(window,mainRenderer):
         SDL_RenderClear(mainRenderer)
 
         # wait 10ms before the next frame
-        SDL_Delay(10)
+        SDL_Delay(10-(SDL_GetTicks()-currentTicks))
 
     SDL_SetWindowResizable(window,SDL_TRUE)
     SDL_SetWindowSize(window,1280,720)
