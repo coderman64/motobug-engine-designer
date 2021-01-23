@@ -18,3 +18,12 @@ toScan.txt
 build/
 dist/
 *.spec
+
+# not-ready-for production rewrite
+Studio2/
+
+# for personal reference
+todo.txt
+
+# local projects
+projects/*
