@@ -275,6 +275,8 @@ class project:
             return False
         
         self.exportPath = exportPathVar.get()
+
+        # export levels 
         levelExportPath = os.path.join(self.exportPath,"levels")
         levelList = []
         levelIndex = 0
@@ -282,6 +284,8 @@ class project:
             levelList.append("level_"+str(levelIndex))
             i.export(os.path.join(levelExportPath,"level_"+str(levelIndex)+".js"),"levels/tileset"+str(self.tilesets.index(i.tileSet))+".js" )
             levelIndex += 1
+        
+        # export list of levels to level.js
         levelEngineFile = open(os.path.join(self.exportPath,"engine/level.js")).read()
         finalLevelEngineFile = ""
         for i in levelEngineFile.splitlines():
@@ -290,6 +294,19 @@ class project:
             else:
                 finalLevelEngineFile += i+"\n"
         open(os.path.join(self.exportPath,"engine/level.js"),'w').write(finalLevelEngineFile)
+
+        # export basic configuration
+        if not os.path.exists(os.path.join(self.exportPath,"engine/config_bkp.js")):
+            # backup default config
+            copytree(os.path.join(self.exportPath,"engine/config.js"),\
+                os.path.join(self.exportPath,"engine/config_bkp.js"))
+        configFile = "var configuration = {"
+        configFile += "classicAngles: false,"
+        configFile += "mBlurDefault: true,"
+        configFile += "skipMenus: "+ "true" if self.skipMenus else "false" + ","
+        configFile += "startLevel: " + str(self.firstLevel)
+        configFile += "};"
+        open(os.path.join(self.exportPath,"engine/config.js"),"w").write(configFile)
 
         tileScanText = ""
         for i in range(len(self.tilesets)):
