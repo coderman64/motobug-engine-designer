@@ -465,6 +465,12 @@ class levelInfo(Tk):
         self.backBox.insert(0,self.project.getCurrentLevel().bkgIndex)
         self.backBox.grid(row=3,column=1,columnspan=2,sticky="ew")
 
+        self.firstCheck = Checkbutton(self,text="Make this level first.")
+        self.firstCheck.grid(row=4,column=1,columnspan=2,sticky="w")
+
+        self.skipTitleCheck = Checkbutton(self,text="Skip the menus when playing")
+        self.skipTitleCheck.grid(row=5,column=1,columnspan=2,sticky="w")
+
         # player properties will be implimented later... for now, just change it
         # within motobug itself
 
