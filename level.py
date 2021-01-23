@@ -207,6 +207,8 @@ class level:
         levelFile += "MUSIC: " + self.musicPath +"\n"
         levelFile += "BKGINDEX: " + str(self.bkgIndex) +"\n"
 
+        print(self.musicPath)
+
         # write tileset information
         levelFile += "TILESET: "
         levelFile += os.path.relpath(self.tileSet.path,os.path.dirname(self.lvFilePath))+"\n"
@@ -243,8 +245,30 @@ class level:
                     final = final[:-1]+"],"
 
             final = final[:-1]+"],"
-        final += "];backgroundMusic.src = \""+ self.musicPath+"\";backgroundMusic.play();cBack = "+str(self.bkgIndex)+";chunks = [];thisScript = document.createElement(\"script\");thisScript.src = \""+tilesetPath+"\";document.body.appendChild(thisScript);"
-        final += """levelName = ["%s","%s","%s"]""" % tuple([i.strip() for i in self.zone.split('|')]+["" for i in range(3-len(self.zone.split('|')))])
+        final += "];cBack = "+str(self.bkgIndex)+";chunks = [];thisScript = document.createElement(\"script\");thisScript.src = \""+tilesetPath+"\";document.body.appendChild(thisScript);"
+        final += """levelName = ["%s","%s","%s"];""" % tuple([i.strip() for i in self.zone.split('|')]+["" for i in range(3-len(self.zone.split('|')))])
+        final += "backgroundMusic.innerHTML = \"\";"
+        final += "backgroundMusic.appendChild(addSource(\""+self.musicPath.replace("\\","\\\\")+"\"));"
+
+        expDir = os.path.abspath(os.getcwd())
+
+        os.chdir(self.project.projPath)
+
+        # mediaPaths = [self.musicPath]
+        for i in os.listdir(os.path.dirname(self.musicPath)):
+            trueName = os.path.basename(self.musicPath)
+            compName = os.path.basename(i)
+            if compName[:compName.rfind(".")] == trueName[:compName.rfind(".")]:
+                final += "backgroundMusic.appendChild(addSource(\""+os.path.join(os.path.dirname(self.musicPath),i).replace("\\","\\\\")+"\"));"
+                # mediaPaths.append(os.path.join(os.path.dirname(self.musicPath),i))
+
+        final += "backgroundMusic.load();"
+
+        os.chdir(expDir)
+
+        # final += "backgroundMusic.src = \""+ self.musicPath+"\";backgroundMusic.play();"
+
+
         fFile = open(name,'w')
         fFile.write(final)
     def clear(self):
@@ -318,7 +342,21 @@ class level:
                 continue
             else:
                 itemType = i[:i.find("(")]
-                itemParams = i[i.find("(")+1:i.find(")")].split(",")
+                itemParamStr = i[i.find("(")+1:i.find(")")] #.split(",")
+                itemParams = []
+                inQuotes = False
+                currentItem = ""
+                for x in itemParamStr:
+                    if x == "," and not inQuotes:
+                        itemParams.append(currentItem)
+                        currentItem = ""
+                    elif x == "\"" and (len(currentItem) == 0 or currentItem[-1] != "\\"):
+                        inQuotes = not inQuotes
+                        currentItem += "\""
+                    else:
+                        currentItem += x
+                itemParams.append(currentItem)
+                # print("itemParams",itemParams)
                 for i in _itemlist.items:
                     if i.find('format').text.strip().startswith(itemType):
                         newItem = item(i,0,0)
