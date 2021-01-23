@@ -48,6 +48,9 @@ class project:
         self.projPath = ""
         self.projFile = ""
         self.exportPath = ""
+
+        self.skipMenus = False
+        self.firstLevel = 0
     def newProject(self,renderer,filename):
         """create a new project at path filename"""
         dirname = filename
@@ -59,7 +62,7 @@ class project:
         os.makedirs(os.path.join(dirname,"pkg"))
         os.makedirs(os.path.join(dirname,"res"))
 
-        defaultProject = "CURRENTLEVEL: 0\nEXPORTPATH: "
+        defaultProject = "CURRENTLVL: 0\nFIRSTLVL: 0\nSKIPMENUS: FALSE\nEXPORTPATH: "
         defaultFile = open(os.path.join(dirname,"project.mbproj"),"w")
         defaultFile.write(defaultProject)
         defaultFile.close()
@@ -132,11 +135,15 @@ class project:
         mbproj = open(filename).read().splitlines()
         for i in mbproj:
             print(i[11:].strip(),i[11:].strip().isdecimal())
-            if i.startswith("CURRENTLVL:") and i[11:].strip().isdecimal():
+            if i.startswith("CURRENTLVL:") and i[11:].strip().isdigit():
                 self.currentLevel = int(i[11:].strip())
                 print("deci: %d" % self.currentLevel)
             if i.startswith("EXPORTPATH:"):
                 self.exportPath = i[11:].strip()
+            if i.startswith("FIRSTLVL:") and i[9:].strip().isdigit():
+                self.firstLevel = int(i[9:].strip())
+            if i.startswith("SKIPMENUS:") and i[10:].strip() in ["TRUE","FALSE"]:
+                self.skipMenus = True if i[10:].strip() == "TRUE" else False
 
 
         # get the path for the pkg directory
@@ -200,7 +207,8 @@ class project:
 
         if result == None:
             # use tk to ask for the file from the dialog (will pause program)
-            result = filedialog.askopenfilename(initialdir = "./projects", title = "Motobug Studio - Open Project",filetypes = (("Motobug Studio Project","*.mbproj"),("all files","*.*")))
+            result = filedialog.askopenfilename(initialdir = "./projects", \
+                title = "Motobug Studio - Open Project",filetypes = (("Motobug Studio Project","*.mbproj"),("all files","*.*")))
 
         if result == "":
             tkMessagebox.showerror("Error opening project","""Cannot load project from empty path (file dialog cancelled).""")
@@ -214,7 +222,8 @@ class project:
             return 0
 
         except Exception as e:
-            tkMessagebox.showerror("Error opening project","""Could not open the project file specified: %s\nEnsure that your project has the correct directory structure and formatting.\n\nERROR: \n%s""" % (result,str(e)))
+            tkMessagebox.showerror("Error opening project","""Could not open the project file specified: %s\
+                Ensure that your project has the correct directory structure and formatting.\n\nERROR: \n%s""" % (result,str(e)))
             self.levels = self.backupLevels
             self.tilesets = self.backupTilesets
             self.projPath = self.backupProjPath
@@ -229,6 +238,8 @@ class project:
         
         # save project informaition
         projectFile = "CURRENTLVL: " + str(self.currentLevel) + "\n"
+        projectFile += "FIRSTLVL: " + str(self.firstLevel) + "\n"
+        projectFile += "SKIPMENUS: " + "TRUE" if self.skipMenus else "FALSE"
         projectFile += "EXPORTPATH: " + str(self.exportPath) + "\n"
 
         open(self.projFile,'w').write(projectFile)
