@@ -16,10 +16,10 @@ Current features:
 ![Screenshot](screenshots/Screenshot3.png "Current Screenshot")
 ^ Item editing system (Current screenshot)
 
-![Screenshot](screenshots/Screenshot2.png "Old Screenshot 1")
+![Screenshot](screenshots/screenshot2.png "Old Screenshot 1")
 ^ Tile layering system (Old screenshot)
 
-![Screenshot](screenshots/Screenshot1.png "Old Screenshot 1")
+![Screenshot](screenshots/screenshot1.png "Old Screenshot 1")
 ^ Tile editing system (Old screenshot)
 
 ## How do I get it running?
