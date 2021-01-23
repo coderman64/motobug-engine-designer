@@ -1,6 +1,9 @@
 from shutil import copy2
 import os
 
+# An easy method to copy a folder and all its contents recursively 
+# from one place to another
+
 def copytree(src,dst):
     for root, dirs, files in os.walk(src):
         if not os.path.isdir(root):
