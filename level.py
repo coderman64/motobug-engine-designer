@@ -465,11 +465,15 @@ class levelInfo(Tk):
         self.backBox.insert(0,self.project.getCurrentLevel().bkgIndex)
         self.backBox.grid(row=3,column=1,columnspan=2,sticky="ew")
 
-        self.firstCheck = Checkbutton(self,text="Make this level first.")
+        self.firstVar = IntVar(self)
+        self.firstCheck = Radiobutton(self,text="Make this level first.",variable=self.firstVar)
         self.firstCheck.grid(row=4,column=1,columnspan=2,sticky="w")
+        self.firstVar.set(1 if self.project.firstLevel == self.project.currentLevel else 0)
 
-        self.skipTitleCheck = Checkbutton(self,text="Skip the menus when playing")
+        self.skipTitleVar = IntVar(self)
+        self.skipTitleCheck = Checkbutton(self,text="Skip the menus when playing",variable=self.skipTitleVar)
         self.skipTitleCheck.grid(row=5,column=1,columnspan=2,sticky="w")
+        self.skipTitleVar.set(1 if self.project.skipMenus else 0)
 
         # player properties will be implimented later... for now, just change it
         # within motobug itself
@@ -502,6 +506,8 @@ class levelInfo(Tk):
         self.musicBox.insert(0,self.project.getCurrentLevel().musicPath)
         self.musicBox.config(state='readonly')
 
+        self.firstVar.set(1 if self.project.firstLevel == self.project.currentLevel else 0)
+
         self.backBox.delete(0,END)
         self.backBox.insert(0,str(self.project.getCurrentLevel().bkgIndex))
     def setLevelInfo(self,*args):
@@ -509,6 +515,9 @@ class levelInfo(Tk):
         self.project.getCurrentLevel().zone = self.nameString.get()
         self.project.getCurrentLevel().musicPath = self.musicVar.get()
         self.project.getCurrentLevel().bkgIndex = int(self.backVar.get())
+        self.project.skipMenus = True if self.skipTitleVar.get() == 1 else False
+        if self.firstVar.get() == 1:
+            self.project.firstLevel = self.project.currentLevel
 
 class levelInfoOpener:
     """

@@ -239,7 +239,7 @@ class project:
         # save project informaition
         projectFile = "CURRENTLVL: " + str(self.currentLevel) + "\n"
         projectFile += "FIRSTLVL: " + str(self.firstLevel) + "\n"
-        projectFile += "SKIPMENUS: " + "TRUE" if self.skipMenus else "FALSE"
+        projectFile += "SKIPMENUS: " + ("TRUE" if self.skipMenus else "FALSE") + "\n"
         projectFile += "EXPORTPATH: " + str(self.exportPath) + "\n"
 
         open(self.projFile,'w').write(projectFile)
@@ -303,11 +303,21 @@ class project:
         configFile = "var configuration = {"
         configFile += "classicAngles: false,"
         configFile += "mBlurDefault: true,"
-        configFile += "skipMenus: "+ "true" if self.skipMenus else "false" + ","
+        configFile += "skipMenus: "+ ("true" if self.skipMenus else "false") + ","
         configFile += "startLevel: " + str(self.firstLevel)
         configFile += "};"
         open(os.path.join(self.exportPath,"engine/config.js"),"w").write(configFile)
 
+        # export item code
+        codeFile = ""
+        for i in self.itemList.items:
+            if i.find("code") != None:
+                codeFile += i.find("code").text
+        print("CODE:\n\n"+codeFile)
+        open(os.path.join(self.exportPath,"res/user_items.js"),"w").write(codeFile)
+            
+
+        # export tile scanner configuration
         tileScanText = ""
         for i in range(len(self.tilesets)):
             tileScanText += open(self.tilesets[i].path).read()
@@ -315,6 +325,8 @@ class project:
         temp = os.getcwd()
         os.chdir(self.projPath)
         open("toScan.txt","w").write(tileScanText)
+
+        # run tile scanner
         startScan()
         os.chdir(temp)
         
