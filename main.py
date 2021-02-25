@@ -52,7 +52,7 @@ def openLoop(window,mainRenderer):
     SDL_SetRenderDrawColor(mainRenderer,255,255,255,255)
 
     texts = [
-        preRenderTextCenter(mainRenderer,ft_Mono24,"Welcome to Motobug Studio (beta 0.2)!",320,20),
+        preRenderTextCenter(mainRenderer,ft_Mono24,"Welcome to Motobug Studio (beta 0.4)!",320,20),
         preRenderTextCenter(mainRenderer,ft_Mono18,"New Project",320,210),
         preRenderTextCenter(mainRenderer,ft_Mono18,"Load Project",320,240),
         preRenderTextCenter(mainRenderer,ft_Mono18,"Quit",320,270)
@@ -119,7 +119,7 @@ def openLoop(window,mainRenderer):
                 inOpenLoop = False
             triedArgs = True
 
-        renderTextCenter(mainRenderer,ft_Mono24,"Welcome to Motobug Studio (beta 0.2)!",320,150,texts[0])
+        renderTextCenter(mainRenderer,ft_Mono24,"Welcome to Motobug Studio (beta 0.4)!",320,150,texts[0])
         renderTextCenter(mainRenderer,ft_Mono18,"New Project",320,210,texts[1])
         renderTextCenter(mainRenderer,ft_Mono18,"Load Project",320,240,texts[2])
         renderTextCenter(mainRenderer,ft_Mono18,"Quit",320,270,texts[3])
@@ -148,7 +148,7 @@ def openLoop(window,mainRenderer):
 def editor(window,mainRenderer,mainProject):
     global lastMessage, toolTipAlpha, itemMode
 
-    lastMessage = "Welcome to Motobug Studo (beta 0.2)"
+    lastMessage = "Welcome to Motobug Studo (beta 0.4)"
     oldMessage = lastMessage
 
     tiles = mainProject.levels[0].tileSet
