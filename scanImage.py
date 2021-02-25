@@ -336,7 +336,10 @@ def partScan(imgName,strings):
 
 
 def maskScan(imgName,maskName):
-    return simpleScan(imgName).replace(imgName,maskName)
+    return simpleScan(maskName).replace(maskName,imgName)
+
+def maskPartScan(imgName,maskName,strings):
+    return partScan(maskName,strings).replace(maskName,imgName)
 
 
 def startScan():
@@ -362,6 +365,12 @@ def startScan():
         elif img.startswith("m>"):
             index1 = img.find("||")
             finalString += str(maskScan(img[2:index1],img[index1+2:]))+"\n"
+        elif img.startswith("m#"):
+            strings = img[1:img.find(">")]
+            index1 = img.find("||")
+            finalString += str(
+                maskPartScan(img[img.find(">")+1:index1],img[index1+2:])
+                )+"\n"
         
 if __name__ == "__main__":
     startScan()
