@@ -35,7 +35,7 @@ class tileSet:
         for i in file.splitlines():
             tileLoc = ""
             if(i.find("||") > -1):
-                tileLoc = i[i.find("||")+2:]
+                tileLoc = i[i.find(">")+1:i.find("||")].strip()
             else:
                 tileLoc = i[i.find(">")+1:]
             self.loadTex(bytes(os.path.join(self.project.projPath,tileLoc),"ASCII"))

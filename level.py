@@ -410,7 +410,7 @@ class level:
             rect.w, rect.h = [round(x*editorScale) for x in i.getSize()]
             # if the location is on the item, open the itemUI for that item
             if SDL_PointInRect(pos,rect) == SDL_TRUE:
-                iui = itemUI(i,self.project.projPath)
+                iui = itemUI(i,self)
                 if iui.hadChanged():
                     self.unchanged = False
                 break

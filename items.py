@@ -149,9 +149,10 @@ class pathOpener:
 
 class itemUI(Tk):
     """A GUI box to edit an item's parameters"""
-    def __init__(self,item,initialdir):
+    def __init__(self,item,level):
         itemType = item.itemType
-        self.initialdir = initialdir
+        self.level = level
+        self.initialdir = level.project.projPath
         self.item = item
         Tk.__init__(self)
         self.resizable(False,False)
@@ -200,6 +201,10 @@ class itemUI(Tk):
                 box.insert(0,item.params[paramName])
                 box.pack()
                 self.edits[paramName] = box
+        self.bringFront = Button(self, text="Bring to front",command=self.bringToFront)
+        self.bringFront.pack()
+        self.sendBack = Button(self, text="Send to Back",command=self.sendToBack)
+        self.sendBack.pack()
         self.destroyButton = Button(self,text = "Delete",command=self.setDestroy)
         self.destroyButton.pack()
         self.focus_force()
@@ -208,6 +213,10 @@ class itemUI(Tk):
         self.destructable = True
         self.changed = False
         self.mainloop()
+    def bringToFront(self):
+        self.level.items = [i for i in self.level.items if i != self.item]+[self.item]
+    def sendToBack(self):
+        self.level.items = [self.item]+[i for i in self.level.items if i != self.item]
     def lostFocus(self,e=None):
         """internal callback"""
         if not self.focus_get() in self.winfo_children() and self.focus_get() != self and self.destructable:
