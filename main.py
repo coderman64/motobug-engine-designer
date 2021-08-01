@@ -195,7 +195,8 @@ def editor(window,mainRenderer,mainProject):
                 "icons/save.png",
                 "icons/levelInfo.png",
                 "icons/itemMode.png",
-                "icons/layers.png"
+                "icons/layers.png",
+                "icons/reload.png"
             ],
             [
                 lambda: tpal.toggle() if not itemMode else ipal.toggle(), 
@@ -205,7 +206,8 @@ def editor(window,mainRenderer,mainProject):
                 saveProject,
                 levelInfoOpener(mainProject),
                 toggleItemMode,
-                lpal.toggle
+                lpal.toggle,
+                lambda: mainProject.reloadProject(mainRenderer)
             ])
 
     editorScale = 1

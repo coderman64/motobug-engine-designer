@@ -62,24 +62,6 @@ class controlBar:
     def toggleHighlight(self,index):
         self.hlList[index] = not self.hlList[index]
 
-def CloseAndSave(project):
-    """
-    if the project isn't saved, open a dialog to ask the user if they want it
-    to be. Save the level if yes, don't save the level on no. Returns True in
-    all cases except when cancel is pressed, or the dialog is closed with the 
-    "x" button
-    """
-    if not project.getCurrentLevel().unchanged:
-        root = Tk()
-        root.withdraw()
-        shouldSave = messagebox.askyesnocancel("Close and Save Project","The project has been changed. Do you want to save before exiting?")
-        if shouldSave:
-            project.save()
-        root.destroy()
-        return shouldSave in [True,False]
-    else:
-        return True
-    
 class layerPallet:
     def __init__(self,rend):
         """

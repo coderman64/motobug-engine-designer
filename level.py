@@ -248,21 +248,24 @@ class level:
         final += "];cBack = "+str(self.bkgIndex)+";chunks = [];thisScript = document.createElement(\"script\");thisScript.src = \""+tilesetPath+"\";document.body.appendChild(thisScript);"
         final += """levelName = ["%s","%s","%s"];""" % tuple([i.strip() for i in self.zone.split('|')]+["" for i in range(3-len(self.zone.split('|')))])
         final += "backgroundMusic.innerHTML = \"\";"
-        final += "backgroundMusic.appendChild(addSource(\""+self.musicPath.replace("\\","\\\\")+"\"));"
-
+        
+        
         expDir = os.path.abspath(os.getcwd())
-
         os.chdir(self.project.projPath)
 
-        # mediaPaths = [self.musicPath]
-        for i in os.listdir(os.path.dirname(self.musicPath)):
-            trueName = os.path.basename(self.musicPath)
-            compName = os.path.basename(i)
-            if compName[:compName.rfind(".")] == trueName[:compName.rfind(".")]:
-                final += "backgroundMusic.appendChild(addSource(\""+os.path.join(os.path.dirname(self.musicPath),i).replace("\\","\\\\")+"\"));"
-                # mediaPaths.append(os.path.join(os.path.dirname(self.musicPath),i))
+        if self.musicPath:
+            final += "backgroundMusic.appendChild(addSource(\""+self.musicPath.replace("\\","\\\\")+"\"));"
 
-        final += "backgroundMusic.load();"
+            # mediaPaths = [self.musicPath]
+            if self.musicPath:
+                for i in os.listdir(os.path.dirname(self.musicPath)):
+                    trueName = os.path.basename(self.musicPath)
+                    compName = os.path.basename(i)
+                    if compName[:compName.rfind(".")] == trueName[:compName.rfind(".")]:
+                        final += "backgroundMusic.appendChild(addSource(\""+os.path.join(os.path.dirname(self.musicPath),i).replace("\\","\\\\")+"\"));"
+                        # mediaPaths.append(os.path.join(os.path.dirname(self.musicPath),i))
+
+            final += "backgroundMusic.load();"
 
         os.chdir(expDir)
 

@@ -1,4 +1,5 @@
 import os
+import shutil
 from tkinter import filedialog
 from tkinter import *
 from tkinter import messagebox as tkMessagebox
@@ -11,6 +12,24 @@ from tileset import *
 from level import *
 from items import *
 from scanImage import startScan
+
+def CloseAndSave(project):
+    """
+    if the project isn't saved, open a dialog to ask the user if they want it
+    to be. Save the level if yes, don't save the level on no. Returns True in
+    all cases except when cancel is pressed, or the dialog is closed with the 
+    "x" button
+    """
+    if not project.getCurrentLevel().unchanged:
+        root = Tk()
+        root.withdraw()
+        shouldSave = tkMessagebox.askyesnocancel("Close and Save Project","The project has been changed. Do you want to save before exiting?")
+        if shouldSave:
+            project.save()
+        root.destroy()
+        return shouldSave in [True,False]
+    else:
+        return True
 
 class exportPathOpener:
     """Callback object to open a directory using a file dialog"""
@@ -81,6 +100,7 @@ class project:
         defaultFile.close()
 
         copytree("res/defaultTileset",os.path.join(dirname,"res","Level","defaultTileset"))
+        shutil.copyfile("res/default.mbitm",os.path.join(dirname,"pkg","default.mbitm"))
         os.remove(os.path.join(dirname,"res","Level","defaultTileset","tiles.mbtiles"))
         
         self.loadProject(renderer,os.path.join(dirname,"project.mbproj"))
@@ -116,6 +136,11 @@ class project:
             # destroy the invisible root window
             root.destroy()
             return 1
+    
+    def reloadProject(self,renderer):
+        if CloseAndSave(self):
+            self.loadProject(renderer,self.projFile)
+
     def loadProject(self,renderer,filename):
         """
         load the project from the given filename. Renderer should be an
@@ -275,6 +300,9 @@ class project:
             return False
         
         self.exportPath = exportPathVar.get()
+
+        if self.exportPath.strip() == "":
+            return False
 
         # export levels 
         levelExportPath = os.path.join(self.exportPath,"levels")
