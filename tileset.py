@@ -56,6 +56,11 @@ class tilePallet:
         self.selected = 0
         self.scrolling = False
 
+        self.tmpTex = None
+        self.updated = True
+
+        self.pRendSize = (0,0)
+
     def setTileset(self,ts):
         self.tileSet = ts
     def draw(self):
@@ -65,45 +70,70 @@ class tilePallet:
         else:
             self.xpos += (-self.xpos)*0.1
 
+        # don't waste resources drawing the pallet if it isn't onscreen
+        if self.xpos < 5: 
+            return
+
         # get the display size
         dispw, disph = c_int(), c_int()
         SDL_GetRendererOutputSize(self.rend,dispw,disph)
 
-        # don't waste resources drawing the pallet if it isn't onscreen
-        if self.xpos > 5:
-            #draw the background for the tile pallet
-            SDL_SetRenderDrawColor(self.rend,0,0,0,200)
-            rect = SDL_Rect()
-            rect.x, rect.y, rect.w, rect.h = round(self.xpos-200),0,200,disph.value
-            SDL_RenderFillRect(self.rend,rect)
+        SDL_RenderCopy(self.rend,self.tmpTex,None,SDL_Rect(int(self.xpos)-200,0,dispw,disph))
 
-            # draw edge line 
+        if (dispw.value,disph.value) != self.pRendSize:
+            self.pRendSize = (dispw.value,disph.value)
+            self.updated = True
+
+        if not self.updated:
+            return
+
+        if self.tmpTex != None:
+            SDL_DestroyTexture(self.tmpTex)
+        self.tmpTex = SDL_CreateTexture(self.rend,SDL_PIXELFORMAT_RGBA32,\
+            SDL_TEXTUREACCESS_TARGET,dispw,disph)
+        SDL_SetTextureBlendMode(self.tmpTex,SDL_BLENDMODE_BLEND)
+
+        SDL_SetRenderTarget(self.rend,self.tmpTex)
+
+        SDL_SetRenderDrawColor(self.rend,0,0,0,0)
+        SDL_RenderClear(self.rend)
+
+        #draw the background for the tile pallet
+        SDL_SetRenderDrawColor(self.rend,0,0,0,200)
+        rect = SDL_Rect(0,0,200,disph.value)
+        SDL_RenderFillRect(self.rend,rect)
+
+        # draw edge line 
+        SDL_SetRenderDrawColor(self.rend,255,255,255,255)
+        rect.x, rect.y, rect.w, rect.h = 199,0,1,disph.value
+        SDL_RenderFillRect(self.rend,rect)
+
+        # draw tile previews
+        for i in range(self.tileSet.texCount):
+            # highlight selected tile
+            if i == self.selected:
+                rect.x, rect.y, rect.w, rect.h = round(200-185),i*150+45-self.scroll,138,138
+                SDL_SetRenderDrawColor(self.rend,255,255,255,100)
+                SDL_RenderFillRect(self.rend,rect) 
+            # draw tile preview
+            rect.x, rect.y, rect.w, rect.h = round(200-180),i*150+50-self.scroll,128,128
+            SDL_RenderCopy(self.rend,self.tileSet.getTex(i),None,rect)
             SDL_SetRenderDrawColor(self.rend,255,255,255,255)
-            rect.x, rect.y, rect.w, rect.h = round(self.xpos-1),0,1,disph.value
-            SDL_RenderFillRect(self.rend,rect)
 
-            # draw tile previews
-            for i in range(self.tileSet.texCount):
-                # highlight selected tile
-                if i == self.selected:
-                    rect.x, rect.y, rect.w, rect.h = round(self.xpos-185),i*150+45-self.scroll,138,138
-                    SDL_SetRenderDrawColor(self.rend,255,255,255,100)
-                    SDL_RenderFillRect(self.rend,rect) 
-                # draw tile preview
-                rect.x, rect.y, rect.w, rect.h = round(self.xpos-180),i*150+50-self.scroll,128,128
-                SDL_RenderCopy(self.rend,self.tileSet.getTex(i),None,rect)
-                SDL_SetRenderDrawColor(self.rend,255,255,255,255)
+            # draw the file name for the tile
+            quickRenderText(self.rend,self.ft_Mono16,self.tileSet.nameArray[i],rect.x,rect.y+128)
+        self.updated = False
+        SDL_SetRenderTarget(self.rend,None)
 
-                # draw the file name for the tile
-                quickRenderText(self.rend,self.ft_Mono16,self.tileSet.nameArray[i],rect.x,rect.y+128)
-    
     def interact(self,mouseY):
+        self.updated = True
         index = floor((mouseY+self.scroll-50)/150)
         if index >= 0 and index < self.tileSet.texCount:
             self.selected = index
         #i*150+50-self.scroll
 
     def scrollbar(self,mouseY):
+        self.updated = True
         self.scrolling = True
         dispw, disph = c_int(), c_int()
         SDL_GetRendererOutputSize(self.rend,dispw,disph)
@@ -137,6 +167,7 @@ class tilePallet:
             self.scroll = 0
         if self.scroll+disph.value >= self.tileSet.texCount*150+178:
             self.scroll = self.tileSet.texCount*150+178-disph.value
+        self.updated = True
             
     
     def getSelectedTile(self):

@@ -1,4 +1,4 @@
-from defusedxml.ElementTree import parse
+from xml.etree.ElementTree import parse
 from tkinter import *
 from tkinter import filedialog
 from tkinter.ttk import *
@@ -158,8 +158,8 @@ class itemUI(Tk):
         self.resizable(False,False)
         # remove the window decoration of the context window in windows
         # this causes problems on linux. OSX is untested
-        if sys.platform.startswith("win"):
-            self.overrideredirect(1)
+        # if sys.platform.startswith("win"):
+        #     self.overrideredirect(1)
 
         x = self.winfo_pointerx()
         y = self.winfo_pointery()
@@ -256,7 +256,7 @@ class itemPallet:
     A GUI element that allows a user to select between adding different items
     or editing only
     """
-    def __init__(self,rend,il):
+    def __init__(self,window,il):
         """
         create an item pallet object
         rend: SDL_Renderer responsible for drawing the pallet
@@ -266,10 +266,16 @@ class itemPallet:
         self.open = False
         self.xpos = 0
         self.scroll = 0
-        self.rend = rend
+        self.rend = SDL_GetRenderer(window)
+        self.window = window
         self.ft_Mono16 = TTF_OpenFont(b"fonts/RobotoMono-Regular.ttf",16)
         self.selected = -1
         self.level = None
+
+        self.tmpTex = None
+        self.updated = True
+
+        self.pRendSize = (0,0)
     def draw(self):
         """draw the item pallet"""
         if self.open:
@@ -277,49 +283,73 @@ class itemPallet:
         else:
             self.xpos += (-self.xpos) * 0.1
 
+        if self.xpos < 5: 
+            return
+
         # get the display size
         dispw, disph = c_int(), c_int()
         SDL_GetRendererOutputSize(self.rend,dispw,disph)
 
-        # don't waste resources drawing the pallet if it isn't onscreen
-        if self.xpos > 5:
-            #draw the background for the tile pallet
-            SDL_SetRenderDrawColor(self.rend,0,0,0,200)
-            rect = SDL_Rect()
-            rect.x, rect.y, rect.w, rect.h = round(self.xpos-200),0,200,disph.value
-            SDL_RenderFillRect(self.rend,rect)
+        SDL_RenderCopy(self.rend,self.tmpTex,None,SDL_Rect(int(self.xpos)-200,0,dispw,disph))
 
-            # draw edge line 
-            SDL_SetRenderDrawColor(self.rend,255,255,255,255)
-            rect.x, rect.y, rect.w, rect.h = round(self.xpos-1),0,1,disph.value
-            SDL_RenderFillRect(self.rend,rect)
+        if (dispw.value,disph.value) != self.pRendSize:
+            self.pRendSize = (dispw.value,disph.value)
+            self.updated = True
 
-            # draw tile previews
-            for i in range(len(self.itemList.items)+1):
-                # highlight selected tile
-                if i-1 == self.selected:
-                    rect.x, rect.y, rect.w, rect.h = round(self.xpos-185),i*150+45-self.scroll,138,138
-                    SDL_SetRenderDrawColor(self.rend,255,255,255,100)
-                    SDL_RenderFillRect(self.rend,rect)
-                # draw tile preview
-                rect.x, rect.y, rect.w, rect.h = round(self.xpos-180),i*150+50-self.scroll,128,128
-                if i >= 1:
-                    for x in self.itemList.items[i-1].find('display'):
-                        if x.tag == 'rect':
-                            colors = x.find('color').text[1:-1].split(',')
-                            SDL_SetRenderDrawColor(self.rend,int(colors[0]),int(colors[1]),int(colors[2]),int(colors[3]) if len(colors) > 3 else 255)
-                            SDL_RenderFillRect(self.rend,rect)
-                    #SDL_RenderCopy(self.rend,self.tileSet.getTex(i),None,rect)
-                    SDL_SetRenderDrawColor(self.rend,255,255,255,255)
+        if not self.updated:
+            return
+        
+        if self.tmpTex != None:
+            SDL_DestroyTexture(self.tmpTex)
+        self.tmpTex = SDL_CreateTexture(self.rend,SDL_PIXELFORMAT_RGBA32,\
+            SDL_TEXTUREACCESS_TARGET,dispw,disph)
+        SDL_SetTextureBlendMode(self.tmpTex,SDL_BLENDMODE_BLEND)
+        
+        SDL_SetRenderTarget(self.rend,self.tmpTex)
 
-                    # draw the file name for the tile
-                    quickRenderText(self.rend,self.ft_Mono16,self.itemList.items[i-1].find('name').text.strip(),rect.x,rect.y+128)
-                else:
-                    #SDL_RenderCopy(self.rend,self.tileSet.getTex(i),None,rect)
-                    SDL_SetRenderDrawColor(self.rend,255,255,255,255)
+        SDL_SetRenderDrawColor(self.rend,0,0,0,0)
+        SDL_RenderClear(self.rend)
+        
+        #draw the background for the tile pallet
+        SDL_SetRenderDrawColor(self.rend,0,0,0,200)
+        rect = SDL_Rect()
+        rect.x, rect.y, rect.w, rect.h = 0,0,200,disph.value
+        SDL_RenderFillRect(self.rend,rect)
 
-                    # draw the file name for the tile
-                    quickRenderText(self.rend,self.ft_Mono16,"Edit Only",rect.x,rect.y+128)
+        # draw edge line 
+        SDL_SetRenderDrawColor(self.rend,255,255,255,255)
+        rect.x, rect.y, rect.w, rect.h = 200,0,1,disph.value
+        SDL_RenderFillRect(self.rend,rect)
+
+        # draw tile previews
+        for i in range(len(self.itemList.items)+1):
+            # highlight selected tile
+            if i-1 == self.selected:
+                rect.x, rect.y, rect.w, rect.h = round(200-185),i*150+45-self.scroll,138,138
+                SDL_SetRenderDrawColor(self.rend,255,255,255,100)
+                SDL_RenderFillRect(self.rend,rect)
+            # draw tile preview
+            rect.x, rect.y, rect.w, rect.h = round(200-180),i*150+50-self.scroll,128,128
+            if i >= 1:
+                for x in self.itemList.items[i-1].find('display'):
+                    if x.tag == 'rect':
+                        colors = x.find('color').text[1:-1].split(',')
+                        SDL_SetRenderDrawColor(self.rend,int(colors[0]),int(colors[1]),int(colors[2]),int(colors[3]) if len(colors) > 3 else 255)
+                        SDL_RenderFillRect(self.rend,rect)
+                #SDL_RenderCopy(self.rend,self.tileSet.getTex(i),None,rect)
+                SDL_SetRenderDrawColor(self.rend,255,255,255,255)
+
+                # draw the file name for the tile
+                quickRenderText(self.rend,self.ft_Mono16,self.itemList.items[i-1].find('name').text.strip(),rect.x,rect.y+128)
+            else:
+                #SDL_RenderCopy(self.rend,self.tileSet.getTex(i),None,rect)
+                SDL_SetRenderDrawColor(self.rend,255,255,255,255)
+
+                # draw the file name for the tile
+                quickRenderText(self.rend,self.ft_Mono16,"Edit Only",rect.x,rect.y+128)
+
+        self.updated = False
+        SDL_SetRenderTarget(self.rend,None)
     
     def interact(self,mouseY):
         """
@@ -328,6 +358,7 @@ class itemPallet:
         index = floor((mouseY+self.scroll-50)/150)-1
         if index >= -1 and index < len(self.itemList.items):
             self.selected = index
+        self.updated = True
         #i*150+50-self.scroll
         
     def toggle(self):
@@ -351,6 +382,7 @@ class itemPallet:
             self.scroll = 0
         if self.scroll+disph.value >= (len(self.itemList.items)+1)*150+178:
             self.scroll = (len(self.itemList.items)+1)*150+178-disph.value
+        self.updated = True
             
     def getSelectedItem(self):
         """

@@ -139,6 +139,7 @@ class project:
     
     def reloadProject(self,renderer):
         if CloseAndSave(self):
+            self.itemList.clearItemList()
             self.loadProject(renderer,self.projFile)
 
     def loadProject(self,renderer,filename):
